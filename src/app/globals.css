@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@layer utilities {
+  .pixel-border {
+    image-rendering: pixelated;
+    border: 4px solid #5D4037;
+    box-shadow: inset 0 0 0 2px #8D6E63, 0 4px 0 0 #3E2723;
+  }
+
+  .mc-btn {
+    @apply font-bold py-3 px-6 rounded-lg text-lg transition-all active:scale-95;
+    image-rendering: pixelated;
+    border: 3px solid;
+    border-color: #6ab04c #2d6a1e #2d6a1e #6ab04c;
+    background: linear-gradient(180deg, #5a9e3e 0%, #4a8e2e 100%);
+    box-shadow: 0 4px 0 0 #1e5a0e;
+    color: white;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  }
+
+  .mc-btn:active {
+    box-shadow: 0 1px 0 0 #1e5a0e;
+    transform: translateY(3px) scale(0.98);
+  }
+
+  .mc-btn-red {
+    border-color: #e05050 #8b1a1a #8b1a1a #e05050;
+    background: linear-gradient(180deg, #d03030 0%, #b02020 100%);
+    box-shadow: 0 4px 0 0 #6a0e0e;
+  }
+  .mc-btn-red:active {
+    box-shadow: 0 1px 0 0 #6a0e0e;
+  }
+
+  .mc-btn-blue {
+    border-color: #50a0e0 #1a4a8b #1a4a8b #50a0e0;
+    background: linear-gradient(180deg, #3080d0 0%, #2060b0 100%);
+    box-shadow: 0 4px 0 0 #0e3a6a;
+  }
+  .mc-btn-blue:active {
+    box-shadow: 0 1px 0 0 #0e3a6a;
+  }
+}
