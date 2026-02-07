@@ -16,7 +16,7 @@ const rooms = [
   },
   {
     href: "/place-value",
-    title: "くらいのへや",
+    title: "かずくんハウス",
     subtitle: "百・十・一 のへやにいれよう",
     emoji: "🏠",
     bgColor: "from-blue-700 to-blue-900",
