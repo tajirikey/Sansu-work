@@ -115,14 +115,14 @@ function SlotRoller({
     if (!dragging.current) return;
     let delta = e.clientY - startY.current;
 
-    // Snap when dragged past half cell
+    // Snap when dragged past half cell (drag down = increase, drag up = decrease)
     while (delta > CELL_H * 0.5) {
-      doRoll(-1);
+      doRoll(1);
       startY.current += CELL_H;
       delta -= CELL_H;
     }
     while (delta < -CELL_H * 0.5) {
-      doRoll(1);
+      doRoll(-1);
       startY.current -= CELL_H;
       delta += CELL_H;
     }
@@ -134,16 +134,16 @@ function SlotRoller({
     dragging.current = false;
 
     if (dragOffset > CELL_H * 0.25) {
-      doRoll(-1);
-    } else if (dragOffset < -CELL_H * 0.25) {
       doRoll(1);
+    } else if (dragOffset < -CELL_H * 0.25) {
+      doRoll(-1);
     }
     setIsSnapping(true);
     setDragOffset(0);
     setTimeout(() => setIsSnapping(false), 150);
   }, [dragOffset, doRoll]);
 
-  const digits = [-2, -1, 0, 1, 2].map(i => ((value + i) % 10 + 10) % 10);
+  const digits = [2, 1, 0, -1, -2].map(i => ((value + i) % 10 + 10) % 10);
   const totalY = -CELL_H + dragOffset;
 
   return (
@@ -296,9 +296,7 @@ export default function SlotPage() {
         `せいかい！ ${tgt} は ${h}百 ${t}十 ${o}一 だね！（${numberToReading(tgt)}）`,
       );
       setDifficulty((d) => Math.min(10, d + 1));
-      if (newStreak > 0 && newStreak % 5 === 0) {
-        setTimeout(() => setShowReward(true), 800);
-      }
+      setTimeout(() => setShowReward(true), 800);
     } else {
       playError();
       setStreak(0);

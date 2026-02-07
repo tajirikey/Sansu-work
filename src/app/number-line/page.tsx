@@ -144,9 +144,7 @@ export default function NumberLinePage() {
         setMessage(`せいかい！ ${problem.current} ${problem.step > 0 ? "+" : ""}${problem.step} = ${problem.answer}`);
       }
 
-      if (newStreak > 0 && newStreak % 5 === 0) {
-        setTimeout(() => setShowReward(true), 800);
-      }
+      setTimeout(() => setShowReward(true), 800);
       setDifficulty(Math.min(10, difficulty + 1));
     } else {
       playError();
