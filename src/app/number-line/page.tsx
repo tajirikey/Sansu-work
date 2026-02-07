@@ -169,13 +169,13 @@ export default function NumberLinePage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-purple-900 to-gray-950 p-3 flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-yellow-400 text-sm hover:underline">← もどる</Link>
+          <Link href="/" className="text-green-700 text-sm hover:underline">← もどる</Link>
           <div className="flex items-center gap-3">
-            <span className="text-purple-300 text-sm font-bold">かぞえよう</span>
-            <span className="text-yellow-400 text-xs">{streak}🔥</span>
+            <span className="text-purple-600 text-sm font-bold">かぞえよう</span>
+            <span className="text-orange-500 text-xs">{streak}🔥</span>
           </div>
         </div>
 
@@ -187,8 +187,8 @@ export default function NumberLinePage() {
               onClick={() => switchMode(opt.value)}
               className={`px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95 ${
                 mode === opt.value
-                  ? "bg-purple-600 text-white border-2 border-purple-400 shadow-lg"
-                  : "bg-gray-800 text-gray-400 border-2 border-gray-700 hover:bg-gray-700"
+                  ? "bg-purple-500 text-white border-2 border-purple-400 shadow-md"
+                  : "bg-white text-gray-500 border-2 border-gray-200 hover:bg-gray-100"
               }`}
             >
               {opt.label}
@@ -197,7 +197,7 @@ export default function NumberLinePage() {
         </div>
 
         {/* number line */}
-        <div className="bg-gray-800/50 rounded-xl p-3 mb-3 overflow-x-auto">
+        <div className="bg-white/80 border border-gray-200 shadow-sm rounded-xl p-3 mb-3 overflow-x-auto">
           <div className="flex items-end justify-center gap-0 min-w-max mx-auto">
             {numbersOnLine.map((num, i) => {
               const isCurrent = num === problem.current;
@@ -212,30 +212,30 @@ export default function NumberLinePage() {
 
                   <span
                     className={`text-xs font-bold mb-1 ${
-                      isCurrent ? "text-yellow-300 text-sm" : isAnswer ? "text-green-400 text-sm" : isNextUnknown ? "text-yellow-500" : "text-gray-500"
+                      isCurrent ? "text-purple-600 text-sm" : isAnswer ? "text-green-400 text-sm" : isNextUnknown ? "text-orange-500" : "text-gray-400"
                     }`}
                   >
                     {isNextUnknown ? "？" : num}
                   </span>
 
-                  <div className={`w-0.5 ${isCurrent || isAnswer ? "h-5 bg-yellow-400" : "h-3 bg-gray-600"}`} />
+                  <div className={`w-0.5 ${isCurrent || isAnswer ? "h-5 bg-yellow-400" : "h-3 bg-gray-300"}`} />
                 </div>
               );
             })}
           </div>
-          <div className="h-0.5 bg-gray-600 -mt-0.5 mx-4" />
+          <div className="h-0.5 bg-gray-300 -mt-0.5 mx-4" />
         </div>
 
         {/* question */}
         <div className="text-center mb-3">
-          <span className="text-yellow-300 text-3xl font-bold">{problem.current}</span>
-          <span className="text-gray-400 mx-2 text-base">の {stepLabel(problem.step)} は？</span>
+          <span className="text-purple-700 text-3xl font-bold">{problem.current}</span>
+          <span className="text-gray-500 mx-2 text-base">の {stepLabel(problem.step)} は？</span>
         </div>
 
         {/* answer display */}
         <div className="text-center mb-3">
-          <div className="inline-block bg-gray-800 border-2 border-gray-600 rounded-xl px-6 py-2 min-w-[140px]">
-            <span className={`text-3xl font-bold ${userAnswer ? "text-white" : "text-gray-600"}`}>
+          <div className="inline-block bg-white border-2 border-gray-300 shadow-sm rounded-xl px-6 py-2 min-w-[140px]">
+            <span className={`text-3xl font-bold ${userAnswer ? "text-gray-800" : "text-gray-300"}`}>
               {userAnswer || "???"}
             </span>
           </div>
@@ -245,10 +245,10 @@ export default function NumberLinePage() {
         {message && (
           <div
             className={`rounded-lg p-2 mb-3 text-center ${
-              cleared ? "bg-green-900/50 border border-green-700" : showCorrectAnswer ? "bg-red-900/50 border border-red-700" : "bg-gray-800/70"
+              cleared ? "bg-green-50 border border-green-200" : showCorrectAnswer ? "bg-red-50 border border-red-200" : "bg-white/80"
             }`}
           >
-            <p className="text-white text-sm">{message}</p>
+            <p className="text-gray-700 text-sm">{message}</p>
           </div>
         )}
 
@@ -262,10 +262,10 @@ export default function NumberLinePage() {
                   onClick={() => handleNumberPad(val)}
                   className={`py-3.5 rounded-xl text-xl font-bold transition-all active:scale-95 ${
                     val === "ok"
-                      ? "bg-green-700 hover:bg-green-600 text-white text-base"
+                      ? "bg-green-500 hover:bg-green-600 text-white text-base"
                       : val === "del"
-                      ? "bg-red-800 hover:bg-red-700 text-white text-sm"
-                      : "bg-gray-700 hover:bg-gray-600 text-white"
+                      ? "bg-red-100 hover:bg-red-200 text-red-700 text-sm"
+                      : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-sm"
                   }`}
                 >
                   {val === "del" ? "けす" : val === "ok" ? "こたえあわせ ✓" : val}
@@ -282,7 +282,7 @@ export default function NumberLinePage() {
         </div>
 
         {/* progress */}
-        <div className="text-center text-gray-500 text-xs mt-2 pb-2">
+        <div className="text-center text-gray-400 text-xs mt-2 pb-2">
           {totalCount.current > 0 && (
             <span>
               せいかいりつ: {correctCount.current}/{totalCount.current} (

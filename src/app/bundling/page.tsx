@@ -295,45 +295,45 @@ export default function BundlingPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-green-900 to-gray-950 p-3 flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-green-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         {/* header */}
         <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-yellow-400 text-sm hover:underline">← もどる</Link>
-          <span className="text-green-300 text-sm font-bold">まとめてみよう</span>
+          <Link href="/" className="text-green-700 text-sm hover:underline">← もどる</Link>
+          <span className="text-green-600 text-sm font-bold">まとめてみよう</span>
         </div>
 
         {/* target + counters row */}
         <div className="flex items-center justify-between mb-2">
           <div className="text-center flex-1">
-            <p className="text-gray-400 text-xs">つくるかず</p>
-            <div className="text-4xl font-bold text-yellow-300 leading-tight">{target}</div>
-            <p className="text-gray-500 text-[10px]">{numberToReading(target)}</p>
+            <p className="text-gray-500 text-xs">つくるかず</p>
+            <div className="text-4xl font-bold text-green-700 leading-tight">{target}</div>
+            <p className="text-gray-400 text-[10px]">{numberToReading(target)}</p>
           </div>
           <div className="flex gap-2 text-xs">
             {plates > 0 && (
-              <div className="bg-red-900/50 rounded px-2 py-1 border border-red-700">
-                <span className="text-red-300">百</span> <span className="text-white font-bold">{plates}</span>
+              <div className="bg-red-100 rounded px-2 py-1 border border-red-200">
+                <span className="text-red-600">百</span> <span className="text-gray-800 font-bold">{plates}</span>
               </div>
             )}
-            <div className="bg-blue-900/50 rounded px-2 py-1 border border-blue-700">
-              <span className="text-blue-300">十</span> <span className="text-white font-bold">{unbundledBars.length}</span>
+            <div className="bg-blue-100 rounded px-2 py-1 border border-blue-200">
+              <span className="text-blue-600">十</span> <span className="text-gray-800 font-bold">{unbundledBars.length}</span>
             </div>
-            <div className="bg-green-900/50 rounded px-2 py-1 border border-green-700">
-              <span className="text-green-300">一</span> <span className="text-white font-bold">{visible.length}</span>
+            <div className="bg-green-100 rounded px-2 py-1 border border-green-200">
+              <span className="text-green-600">一</span> <span className="text-gray-800 font-bold">{visible.length}</span>
             </div>
           </div>
         </div>
 
         {/* message */}
-        <div className="bg-gray-800/70 rounded-lg p-2 mb-2 text-center">
-          <p className="text-white text-xs">{message}</p>
+        <div className="bg-white/80 border border-gray-200 shadow-sm rounded-lg p-2 mb-2 text-center">
+          <p className="text-gray-800 text-xs">{message}</p>
         </div>
 
         {/* 百 plates */}
         {plates > 0 && (
-          <div className="bg-red-950/40 rounded-lg p-2 mb-2 border border-red-800">
-            <p className="text-red-300 text-[10px] mb-1 font-bold">百のいた</p>
+          <div className="bg-white/80 rounded-lg p-2 mb-2 border border-red-200 shadow-sm">
+            <p className="text-red-600 text-[10px] mb-1 font-bold">百のいた</p>
             <div className="flex flex-wrap gap-1">
               {Array.from({ length: plates }).map((_, i) => (
                 <HundredPlate key={i} />
@@ -343,11 +343,11 @@ export default function BundlingPage() {
         )}
 
         {/* 十 bars */}
-        <div ref={bundleAreaRef} className="bg-blue-950/40 rounded-lg p-2 mb-2 border border-blue-800 min-h-[56px]">
-          <p className="text-blue-300 text-[10px] mb-1 font-bold">
+        <div ref={bundleAreaRef} className="bg-white/80 rounded-lg p-2 mb-2 border border-blue-200 shadow-sm min-h-[56px]">
+          <p className="text-blue-600 text-[10px] mb-1 font-bold">
             十のたば
             {unbundledBars.length >= 10 && (
-              <span className="text-yellow-300 ml-1">← 10こ えらんで まとめよう！</span>
+              <span className="text-green-700 ml-1">← 10こ えらんで まとめよう！</span>
             )}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -357,17 +357,17 @@ export default function BundlingPage() {
               </button>
             ))}
             {unbundledBars.length === 0 && (
-              <p className="text-gray-600 text-[10px]">まるを まとめると ここに たばが できるよ</p>
+              <p className="text-gray-400 text-[10px]">まるを まとめると ここに たばが できるよ</p>
             )}
           </div>
         </div>
 
         {/* 一 dots grid */}
-        <div className="bg-green-950/40 rounded-lg p-2 mb-2 border border-green-800 flex-1">
-          <p className="text-green-300 text-[10px] mb-1 font-bold">
+        <div className="bg-white/80 rounded-lg p-2 mb-2 border border-green-200 shadow-sm flex-1">
+          <p className="text-green-600 text-[10px] mb-1 font-bold">
             一のまる
             {selectedCount > 0 && (
-              <span className="text-yellow-300 ml-1">えらんだ: {selectedCount}こ</span>
+              <span className="text-green-700 ml-1">えらんだ: {selectedCount}こ</span>
             )}
           </p>
           <div
@@ -399,10 +399,10 @@ export default function BundlingPage() {
         </div>
 
         {/* action buttons — sticky bottom */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 via-gray-950/95 to-transparent pt-3 pb-2">
+        <div className="sticky bottom-0 bg-gradient-to-t from-amber-50 via-amber-50/95 to-transparent pt-3 pb-2">
           {!cleared ? (
             <div className="flex items-center justify-center gap-2">
-              <button onClick={clearSelection} className="text-gray-400 text-xs underline px-2">
+              <button onClick={clearSelection} className="text-gray-500 text-xs underline px-2">
                 クリア
               </button>
               <button

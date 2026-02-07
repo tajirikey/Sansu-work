@@ -45,16 +45,16 @@ function PlaceColumn({
   renderUnit: () => React.ReactNode;
 }) {
   const styles = {
-    red: { bg: "bg-red-950/50", border: "border-red-700", text: "text-red-300", btn: "bg-red-800 hover:bg-red-700 active:bg-red-600" },
-    blue: { bg: "bg-blue-950/50", border: "border-blue-700", text: "text-blue-300", btn: "bg-blue-800 hover:bg-blue-700 active:bg-blue-600" },
-    green: { bg: "bg-green-950/50", border: "border-green-700", text: "text-green-300", btn: "bg-green-800 hover:bg-green-700 active:bg-green-600" },
+    red: { bg: "bg-red-50", border: "border-red-200", text: "text-red-600", btn: "bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-700" },
+    blue: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", btn: "bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700" },
+    green: { bg: "bg-green-50", border: "border-green-200", text: "text-green-600", btn: "bg-green-100 hover:bg-green-200 active:bg-green-300 text-green-700" },
   };
   const s = styles[color];
 
   return (
     <div className={`${s.bg} rounded-xl border ${s.border} p-3 flex-1 flex flex-col items-center min-h-[300px]`}>
       <p className={`${s.text} text-xs font-bold mb-1`}>{label}</p>
-      <p className="text-white text-3xl font-bold mb-3">{count}</p>
+      <p className="text-gray-800 text-3xl font-bold mb-3">{count}</p>
 
       {/* units display */}
       <div className="flex-1 flex flex-wrap gap-1 justify-center content-start w-full mb-3">
@@ -64,7 +64,7 @@ function PlaceColumn({
           </div>
         ))}
         {count > 12 && (
-          <span className="text-gray-400 text-xs self-center">+{count - 12}</span>
+          <span className="text-gray-500 text-xs self-center">+{count - 12}</span>
         )}
       </div>
 
@@ -73,13 +73,13 @@ function PlaceColumn({
         <button
           onClick={onRemove}
           disabled={count <= 0}
-          className={`flex-1 ${s.btn} disabled:opacity-30 text-white font-bold py-3 rounded-lg text-xl transition-colors active:scale-95`}
+          className={`flex-1 ${s.btn} disabled:opacity-30 font-bold py-3 rounded-lg text-xl transition-colors active:scale-95`}
         >
           −
         </button>
         <button
           onClick={onAdd}
-          className={`flex-1 ${s.btn} text-white font-bold py-3 rounded-lg text-xl transition-colors active:scale-95`}
+          className={`flex-1 ${s.btn} font-bold py-3 rounded-lg text-xl transition-colors active:scale-95`}
         >
           ＋
         </button>
@@ -159,26 +159,26 @@ export default function PlaceValuePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-gray-950 p-4 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 p-4 pb-32">
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <Link href="/" className="text-yellow-400 text-sm hover:underline">
+          <Link href="/" className="text-green-700 text-sm hover:underline">
             ← もどる
           </Link>
-          <span className="text-blue-300 text-sm font-bold">かずくんハウス</span>
+          <span className="text-blue-600 text-sm font-bold">かずくんハウス</span>
         </div>
 
         {/* target */}
         <div className="text-center mb-3">
-          <p className="text-gray-300 text-sm mb-1">このかずを つくろう</p>
-          <div className="text-5xl font-bold text-yellow-300">{target}</div>
+          <p className="text-gray-500 text-sm mb-1">このかずを つくろう</p>
+          <div className="text-5xl font-bold text-blue-700">{target}</div>
           <p className="text-gray-400 text-xs mt-1">{numberToReading(target)}</p>
         </div>
 
         {/* current value */}
         <div className="text-center mb-2">
-          <span className="text-gray-400 text-sm">いまのかず: </span>
-          <span className={`text-2xl font-bold ${currentValue === target ? "text-green-400" : "text-white"}`}>
+          <span className="text-gray-500 text-sm">いまのかず: </span>
+          <span className={`text-2xl font-bold ${currentValue === target ? "text-green-400" : "text-gray-800"}`}>
             {currentValue}
           </span>
         </div>
@@ -186,15 +186,15 @@ export default function PlaceValuePage() {
         {/* carry message */}
         {carryMessage && (
           <div className="text-center mb-2 animate-bounce">
-            <span className="bg-yellow-600/80 text-white text-sm font-bold px-4 py-1 rounded-full">
+            <span className="bg-yellow-400 text-yellow-900 text-sm font-bold px-4 py-1 rounded-full">
               {carryMessage}
             </span>
           </div>
         )}
 
         {/* message */}
-        <div className="bg-gray-800/70 rounded-xl p-3 mb-4 text-center">
-          <p className="text-white text-sm">{message}</p>
+        <div className="bg-white/80 border border-gray-200 shadow-sm rounded-xl p-3 mb-4 text-center">
+          <p className="text-gray-800 text-sm">{message}</p>
         </div>
 
         {/* place value columns */}

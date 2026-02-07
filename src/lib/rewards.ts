@@ -231,3 +231,8 @@ export function getAllItems(): MinecraftItem[] {
 export function getItemById(id: string): MinecraftItem | undefined {
   return ITEMS.find((item) => item.id === id);
 }
+
+export function resetCollection(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STORAGE_KEY);
+}

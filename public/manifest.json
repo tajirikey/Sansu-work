@@ -4,8 +4,8 @@
   "description": "小学1年生のための数の概念学習アプリ",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#fffbeb",
+  "theme_color": "#fffbeb",
   "orientation": "portrait",
   "icons": [
     {
