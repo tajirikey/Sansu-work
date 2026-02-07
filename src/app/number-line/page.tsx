@@ -5,7 +5,7 @@ import Link from "next/link";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
-type StepMode = 1 | -1 | 10;
+type StepMode = 1 | -1 | 10 | -10;
 type UserMode = "plus" | "minus" | "mix";
 
 interface Problem {
@@ -20,17 +20,17 @@ function generateProblem(difficulty: number, mode: UserMode): Problem {
   if (mode === "plus") {
     step = difficulty < 5 ? 1 : (Math.random() > 0.4 ? 1 : 10);
   } else if (mode === "minus") {
-    step = difficulty < 5 ? -1 : (Math.random() > 0.4 ? -1 : 10);
+    step = difficulty < 5 ? -1 : (Math.random() > 0.4 ? -1 : -10);
   } else {
     // mix
     if (difficulty < 3) {
       step = Math.random() > 0.4 ? 1 : -1;
     } else if (difficulty < 6) {
       const r = Math.random();
-      step = r < 0.35 ? 1 : r < 0.7 ? -1 : 10;
+      step = r < 0.25 ? 1 : r < 0.5 ? -1 : r < 0.75 ? 10 : -10;
     } else {
       const r = Math.random();
-      step = r < 0.3 ? 1 : r < 0.6 ? -1 : 10;
+      step = r < 0.25 ? 1 : r < 0.5 ? -1 : r < 0.75 ? 10 : -10;
     }
   }
 
@@ -46,12 +46,20 @@ function generateProblem(difficulty: number, mode: UserMode): Problem {
     const easyPoints = Array.from({ length: 15 }, () => Math.floor(Math.random() * 199) + 2);
     const pool = difficulty < 2 ? borrowPoints.slice(0, 5) : [...borrowPoints, ...easyPoints];
     current = pool[Math.floor(Math.random() * pool.length)];
-  } else {
+  } else if (step === 10) {
     const carryPoints = [90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 190, 191, 192, 193];
     const easyPoints = Array.from({ length: 15 }, () =>
       Math.floor(Math.random() * 19) * 10 + Math.floor(Math.random() * 10),
     );
     const pool = difficulty < 5 ? carryPoints.slice(0, 5).concat(easyPoints.slice(0, 5)) : [...carryPoints, ...easyPoints];
+    current = pool[Math.floor(Math.random() * pool.length)];
+  } else {
+    // step === -10
+    const borrowPoints = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 200, 201, 202, 203];
+    const easyPoints = Array.from({ length: 15 }, () =>
+      Math.floor(Math.random() * 19) * 10 + Math.floor(Math.random() * 10) + 10,
+    );
+    const pool = difficulty < 5 ? borrowPoints.slice(0, 5).concat(easyPoints.slice(0, 5)) : [...borrowPoints, ...easyPoints];
     current = pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -61,7 +69,8 @@ function generateProblem(difficulty: number, mode: UserMode): Problem {
 function stepLabel(step: StepMode): string {
   if (step === 1) return "つぎ（＋1）";
   if (step === -1) return "まえ（−1）";
-  return "＋10";
+  if (step === 10) return "＋10";
+  return "−10";
 }
 
 const MODE_OPTIONS: { value: UserMode; label: string }[] = [
@@ -120,7 +129,8 @@ export default function NumberLinePage() {
       const isCarry =
         (problem.step === 1 && problem.current % 10 === 9) ||
         (problem.step === -1 && problem.current % 10 === 0) ||
-        (problem.step === 10 && problem.current % 100 >= 90);
+        (problem.step === 10 && problem.current % 100 >= 90) ||
+        (problem.step === -10 && problem.current % 100 < 10);
 
       if (isCarry) {
         playBundle();
