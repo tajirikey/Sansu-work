@@ -6,6 +6,7 @@ import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
 type StepMode = 1 | -1 | 10;
+type UserMode = "plus" | "minus" | "mix";
 
 interface Problem {
   current: number;
@@ -13,34 +14,39 @@ interface Problem {
   answer: number;
 }
 
-function generateProblem(difficulty: number): Problem {
+function generateProblem(difficulty: number, mode: UserMode): Problem {
   let step: StepMode;
-  if (difficulty < 3) {
-    step = Math.random() > 0.4 ? 1 : -1;
-  } else if (difficulty < 6) {
-    const r = Math.random();
-    step = r < 0.35 ? 1 : r < 0.7 ? -1 : 10;
+
+  if (mode === "plus") {
+    step = difficulty < 5 ? 1 : (Math.random() > 0.4 ? 1 : 10);
+  } else if (mode === "minus") {
+    step = difficulty < 5 ? -1 : (Math.random() > 0.4 ? -1 : 10);
   } else {
-    const r = Math.random();
-    step = r < 0.3 ? 1 : r < 0.6 ? -1 : 10;
+    // mix
+    if (difficulty < 3) {
+      step = Math.random() > 0.4 ? 1 : -1;
+    } else if (difficulty < 6) {
+      const r = Math.random();
+      step = r < 0.35 ? 1 : r < 0.7 ? -1 : 10;
+    } else {
+      const r = Math.random();
+      step = r < 0.3 ? 1 : r < 0.6 ? -1 : 10;
+    }
   }
 
   let current: number;
 
   if (step === 1) {
-    // Focus on carry-over points for +1
     const carryPoints = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99, 109, 119, 129, 139, 149, 159, 169, 179, 189, 199];
     const easyPoints = Array.from({ length: 15 }, () => Math.floor(Math.random() * 199) + 1);
     const pool = difficulty < 2 ? carryPoints.slice(0, 5) : [...carryPoints, ...easyPoints];
     current = pool[Math.floor(Math.random() * pool.length)];
   } else if (step === -1) {
-    // Focus on borrow points for -1 (numbers ending in 0)
     const borrowPoints = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
     const easyPoints = Array.from({ length: 15 }, () => Math.floor(Math.random() * 199) + 2);
     const pool = difficulty < 2 ? borrowPoints.slice(0, 5) : [...borrowPoints, ...easyPoints];
     current = pool[Math.floor(Math.random() * pool.length)];
   } else {
-    // step === 10
     const carryPoints = [90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 190, 191, 192, 193];
     const easyPoints = Array.from({ length: 15 }, () =>
       Math.floor(Math.random() * 19) * 10 + Math.floor(Math.random() * 10),
@@ -49,11 +55,7 @@ function generateProblem(difficulty: number): Problem {
     current = pool[Math.floor(Math.random() * pool.length)];
   }
 
-  return {
-    current,
-    step,
-    answer: current + step,
-  };
+  return { current, step, answer: current + step };
 }
 
 function stepLabel(step: StepMode): string {
@@ -62,8 +64,15 @@ function stepLabel(step: StepMode): string {
   return "＋10";
 }
 
+const MODE_OPTIONS: { value: UserMode; label: string }[] = [
+  { value: "plus", label: "＋ たす" },
+  { value: "minus", label: "− ひく" },
+  { value: "mix", label: "まぜる" },
+];
+
 export default function NumberLinePage() {
-  const [problem, setProblem] = useState<Problem>(() => generateProblem(0));
+  const [mode, setMode] = useState<UserMode>("plus");
+  const [problem, setProblem] = useState<Problem>(() => generateProblem(0, "plus"));
   const [userAnswer, setUserAnswer] = useState("");
   const [showReward, setShowReward] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -75,7 +84,6 @@ export default function NumberLinePage() {
   const correctCount = useRef(0);
   const totalCount = useRef(0);
 
-  // Build visible number line
   useEffect(() => {
     const center = problem.current;
     const absStep = Math.abs(problem.step);
@@ -87,6 +95,15 @@ export default function NumberLinePage() {
     }
     setNumbersOnLine(nums);
   }, [problem]);
+
+  const switchMode = (newMode: UserMode) => {
+    setMode(newMode);
+    setProblem(generateProblem(difficulty, newMode));
+    setUserAnswer("");
+    setCleared(false);
+    setShowCorrectAnswer(false);
+    setMessage("");
+  };
 
   const handleSubmit = useCallback(() => {
     const parsed = parseInt(userAnswer, 10);
@@ -120,7 +137,6 @@ export default function NumberLinePage() {
       if (newStreak > 0 && newStreak % 5 === 0) {
         setTimeout(() => setShowReward(true), 800);
       }
-
       setDifficulty(Math.min(10, difficulty + 1));
     } else {
       playError();
@@ -131,7 +147,7 @@ export default function NumberLinePage() {
   }, [userAnswer, problem, streak, difficulty]);
 
   const nextProblem = () => {
-    setProblem(generateProblem(difficulty));
+    setProblem(generateProblem(difficulty, mode));
     setUserAnswer("");
     setCleared(false);
     setShowCorrectAnswer(false);
@@ -153,20 +169,35 @@ export default function NumberLinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-gray-950 p-4 pb-32">
-      <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/" className="text-yellow-400 text-sm hover:underline">
-            ← もどる
-          </Link>
+    <div className="min-h-[100dvh] bg-gradient-to-b from-purple-900 to-gray-950 p-3 flex flex-col">
+      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <Link href="/" className="text-yellow-400 text-sm hover:underline">← もどる</Link>
           <div className="flex items-center gap-3">
             <span className="text-purple-300 text-sm font-bold">かぞえよう</span>
             <span className="text-yellow-400 text-xs">{streak}🔥</span>
           </div>
         </div>
 
+        {/* mode toggle */}
+        <div className="flex justify-center gap-1 mb-3">
+          {MODE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => switchMode(opt.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95 ${
+                mode === opt.value
+                  ? "bg-purple-600 text-white border-2 border-purple-400 shadow-lg"
+                  : "bg-gray-800 text-gray-400 border-2 border-gray-700 hover:bg-gray-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         {/* number line */}
-        <div className="bg-gray-800/50 rounded-xl p-4 mb-4 overflow-x-auto">
+        <div className="bg-gray-800/50 rounded-xl p-3 mb-3 overflow-x-auto">
           <div className="flex items-end justify-center gap-0 min-w-max mx-auto">
             {numbersOnLine.map((num, i) => {
               const isCurrent = num === problem.current;
@@ -174,10 +205,10 @@ export default function NumberLinePage() {
               const isNextUnknown = num === problem.answer && !cleared && !showCorrectAnswer;
 
               return (
-                <div key={`${num}-${i}`} className="flex flex-col items-center" style={{ minWidth: 40 }}>
-                  {isCurrent && <div className="text-2xl mb-1 animate-bounce">🧱</div>}
-                  {isAnswer && <div className="text-2xl mb-1 animate-bounce-in">⭐</div>}
-                  {isNextUnknown && <div className="text-2xl mb-1 text-yellow-300 animate-pulse">❓</div>}
+                <div key={`${num}-${i}`} className="flex flex-col items-center" style={{ minWidth: 38 }}>
+                  {isCurrent && <div className="text-xl mb-1 animate-bounce">🧱</div>}
+                  {isAnswer && <div className="text-xl mb-1 animate-bounce-in">⭐</div>}
+                  {isNextUnknown && <div className="text-xl mb-1 text-yellow-300 animate-pulse">❓</div>}
 
                   <span
                     className={`text-xs font-bold mb-1 ${
@@ -187,7 +218,7 @@ export default function NumberLinePage() {
                     {isNextUnknown ? "？" : num}
                   </span>
 
-                  <div className={`w-0.5 ${isCurrent || isAnswer ? "h-6 bg-yellow-400" : "h-4 bg-gray-600"}`} />
+                  <div className={`w-0.5 ${isCurrent || isAnswer ? "h-5 bg-yellow-400" : "h-3 bg-gray-600"}`} />
                 </div>
               );
             })}
@@ -196,17 +227,15 @@ export default function NumberLinePage() {
         </div>
 
         {/* question */}
-        <div className="text-center mb-4">
-          <p className="text-gray-300 text-lg">
-            <span className="text-yellow-300 text-3xl font-bold">{problem.current}</span>
-            <span className="text-gray-400 mx-2">の {stepLabel(problem.step)} は？</span>
-          </p>
+        <div className="text-center mb-3">
+          <span className="text-yellow-300 text-3xl font-bold">{problem.current}</span>
+          <span className="text-gray-400 mx-2 text-base">の {stepLabel(problem.step)} は？</span>
         </div>
 
         {/* answer display */}
-        <div className="text-center mb-4">
-          <div className="inline-block bg-gray-800 border-2 border-gray-600 rounded-xl px-8 py-3 min-w-[150px]">
-            <span className={`text-4xl font-bold ${userAnswer ? "text-white" : "text-gray-600"}`}>
+        <div className="text-center mb-3">
+          <div className="inline-block bg-gray-800 border-2 border-gray-600 rounded-xl px-6 py-2 min-w-[140px]">
+            <span className={`text-3xl font-bold ${userAnswer ? "text-white" : "text-gray-600"}`}>
               {userAnswer || "???"}
             </span>
           </div>
@@ -215,7 +244,7 @@ export default function NumberLinePage() {
         {/* message */}
         {message && (
           <div
-            className={`rounded-xl p-3 mb-4 text-center ${
+            className={`rounded-lg p-2 mb-3 text-center ${
               cleared ? "bg-green-900/50 border border-green-700" : showCorrectAnswer ? "bg-red-900/50 border border-red-700" : "bg-gray-800/70"
             }`}
           >
@@ -223,35 +252,37 @@ export default function NumberLinePage() {
           </div>
         )}
 
-        {/* number pad / next button */}
-        {!cleared && !showCorrectAnswer ? (
-          <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto mb-4">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "del", "0", "ok"].map((val) => (
-              <button
-                key={val}
-                onClick={() => handleNumberPad(val)}
-                className={`py-4 rounded-xl text-2xl font-bold transition-all active:scale-95 ${
-                  val === "ok"
-                    ? "bg-green-700 hover:bg-green-600 text-white"
-                    : val === "del"
-                    ? "bg-red-800 hover:bg-red-700 text-white text-base"
-                    : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
-              >
-                {val === "del" ? "けす" : val === "ok" ? "こたえあわせ ✓" : val}
+        {/* number pad / next */}
+        <div className="flex-1 flex flex-col justify-end">
+          {!cleared && !showCorrectAnswer ? (
+            <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9", "del", "0", "ok"].map((val) => (
+                <button
+                  key={val}
+                  onClick={() => handleNumberPad(val)}
+                  className={`py-3.5 rounded-xl text-xl font-bold transition-all active:scale-95 ${
+                    val === "ok"
+                      ? "bg-green-700 hover:bg-green-600 text-white text-base"
+                      : val === "del"
+                      ? "bg-red-800 hover:bg-red-700 text-white text-sm"
+                      : "bg-gray-700 hover:bg-gray-600 text-white"
+                  }`}
+                >
+                  {val === "del" ? "けす" : val === "ok" ? "こたえあわせ ✓" : val}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center animate-slide-up">
+              <button onClick={nextProblem} className="mc-btn text-lg px-8 py-3">
+                つぎのもんだい →
               </button>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center animate-slide-up">
-            <button onClick={nextProblem} className="mc-btn text-xl px-10 py-4">
-              つぎのもんだい →
-            </button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* progress */}
-        <div className="text-center text-gray-500 text-xs mt-2">
+        <div className="text-center text-gray-500 text-xs mt-2 pb-2">
           {totalCount.current > 0 && (
             <span>
               せいかいりつ: {correctCount.current}/{totalCount.current} (
