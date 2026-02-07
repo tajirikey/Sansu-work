@@ -17,8 +17,8 @@ export default function TenBundle({
     <div
       className={`inline-flex flex-col p-1.5 rounded-lg border-2 transition-colors duration-150
         ${selected
-          ? "bg-yellow-500/30 border-yellow-400"
-          : "bg-blue-900/50 border-blue-500"
+          ? "bg-yellow-100 border-yellow-400"
+          : "bg-blue-100 border-blue-300"
         }
         ${className}`}
       style={{ gap }}

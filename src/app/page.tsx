@@ -30,6 +30,14 @@ const rooms = [
     bgColor: "from-purple-500 to-purple-600",
     borderColor: "border-purple-400",
   },
+  {
+    href: "/slot",
+    title: "かずをつくろう",
+    subtitle: "スロットで 3けたの かずをつくろう",
+    emoji: "🎰",
+    bgColor: "from-orange-500 to-orange-600",
+    borderColor: "border-orange-400",
+  },
 ];
 
 export default function Home() {

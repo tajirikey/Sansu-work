@@ -10,7 +10,7 @@ export default function HundredPlate({ className = "" }: HundredPlateProps) {
 
   return (
     <div
-      className={`inline-flex flex-col p-2 rounded-lg border-2 bg-red-900/50 border-red-500 ${className}`}
+      className={`inline-flex flex-col p-2 rounded-lg border-2 bg-red-100 border-red-300 ${className}`}
       style={{ gap: gap * 2 }}
     >
       {/* 10 rows of 10 dots = 100 */}
