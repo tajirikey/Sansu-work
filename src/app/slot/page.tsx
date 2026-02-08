@@ -35,7 +35,16 @@ interface Question {
   type: QuestionType;
 }
 
-function generateQuestion(difficulty: number): Question {
+function generateQuestion(difficulty: number, lastTarget: number): Question {
+  const maxAttempts = 20;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const q = generateQuestionInner(difficulty);
+    if (q.target !== lastTarget) return q;
+  }
+  return generateQuestionInner(difficulty);
+}
+
+function generateQuestionInner(difficulty: number): Question {
   let target: number;
 
   if (difficulty < 3) {
@@ -91,6 +100,10 @@ function SlotRoller({
   const dragging = useRef(false);
   const startY = useRef(0);
   const valueRef = useRef(value);
+  // Velocity tracking
+  const lastY = useRef(0);
+  const lastTime = useRef(0);
+  const velocity = useRef(0);
 
   useEffect(() => { valueRef.current = value; }, [value]);
 
@@ -106,6 +119,9 @@ function SlotRoller({
     if (disabled) return;
     dragging.current = true;
     startY.current = e.clientY;
+    lastY.current = e.clientY;
+    lastTime.current = Date.now();
+    velocity.current = 0;
     setDragOffset(0);
     setIsSnapping(false);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -113,15 +129,23 @@ function SlotRoller({
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragging.current) return;
+    const now = Date.now();
+    const dt = now - lastTime.current;
+    if (dt > 0) {
+      velocity.current = (e.clientY - lastY.current) / dt;
+    }
+    lastY.current = e.clientY;
+    lastTime.current = now;
+
     let delta = e.clientY - startY.current;
 
-    // Snap when dragged past half cell (drag down = increase, drag up = decrease)
-    while (delta > CELL_H * 0.5) {
+    // Snap when dragged past 40% of cell (down = increase, up = decrease)
+    while (delta > CELL_H * 0.4) {
       doRoll(1);
       startY.current += CELL_H;
       delta -= CELL_H;
     }
-    while (delta < -CELL_H * 0.5) {
+    while (delta < -CELL_H * 0.4) {
       doRoll(-1);
       startY.current -= CELL_H;
       delta += CELL_H;
@@ -133,14 +157,26 @@ function SlotRoller({
     if (!dragging.current) return;
     dragging.current = false;
 
-    if (dragOffset > CELL_H * 0.25) {
+    const vel = velocity.current; // px/ms
+    const absVel = Math.abs(vel);
+
+    // Flick detection: if velocity is high enough, snap even with small offset
+    if (absVel > 0.3) {
+      // Flick! Snap in the direction of velocity
+      if (vel > 0) {
+        doRoll(1);
+      } else {
+        doRoll(-1);
+      }
+    } else if (dragOffset > CELL_H * 0.2) {
       doRoll(1);
-    } else if (dragOffset < -CELL_H * 0.25) {
+    } else if (dragOffset < -CELL_H * 0.2) {
       doRoll(-1);
     }
+
     setIsSnapping(true);
     setDragOffset(0);
-    setTimeout(() => setIsSnapping(false), 150);
+    setTimeout(() => setIsSnapping(false), 180);
   }, [dragOffset, doRoll]);
 
   const digits = [2, 1, 0, -1, -2].map(i => ((value + i) % 10 + 10) % 10);
@@ -172,7 +208,7 @@ function SlotRoller({
           <div
             style={{
               transform: `translateY(${totalY}px)`,
-              transition: isSnapping ? "transform 0.15s ease-out" : "none",
+              transition: isSnapping ? "transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
             }}
           >
             {digits.map((d, i) => {
@@ -263,7 +299,7 @@ export default function SlotPage() {
   const [hundreds, setHundreds] = useState(0);
   const [tens, setTens] = useState(0);
   const [ones, setOnes] = useState(0);
-  const [question, setQuestion] = useState<Question>(() => generateQuestion(0));
+  const [question, setQuestion] = useState<Question>(() => generateQuestion(0, -1));
   const [cleared, setCleared] = useState(false);
   const [message, setMessage] = useState("");
   const [wrongPlaces, setWrongPlaces] = useState<Set<string>>(new Set());
@@ -272,11 +308,12 @@ export default function SlotPage() {
   const [showReward, setShowReward] = useState(false);
   const correctCount = useRef(0);
   const totalCount = useRef(0);
+  const lastTarget = useRef(-1);
 
   const number = hundreds * 100 + tens * 10 + ones;
 
   useEffect(() => {
-    setQuestion(generateQuestion(0));
+    setQuestion(generateQuestion(0, -1));
   }, []);
 
   const handleCheck = useCallback(() => {
@@ -313,7 +350,8 @@ export default function SlotPage() {
   }, [number, question, streak, hundreds, tens, ones]);
 
   const nextQuestion = useCallback(() => {
-    const q = generateQuestion(difficulty);
+    lastTarget.current = question.target;
+    const q = generateQuestion(difficulty, lastTarget.current);
     setQuestion(q);
     setHundreds(0);
     setTens(0);
@@ -321,7 +359,7 @@ export default function SlotPage() {
     setCleared(false);
     setMessage("");
     setWrongPlaces(new Set());
-  }, [difficulty]);
+  }, [difficulty, question.target]);
 
   /* bonus: random spin to generate a quick answer */
   const spinToAnswer = useCallback(() => {

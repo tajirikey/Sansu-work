@@ -14,56 +14,289 @@ interface Problem {
   answer: number;
 }
 
-function generateProblem(difficulty: number, mode: UserMode): Problem {
+/* ─── Scaffolded difficulty system ───
+   The child struggles with:
+   - 109→110 transition (carry across tens to hundreds)
+   - Confusing place values (70+30=73, reading 60 as じゅうろく)
+   - Borrowing across boundaries
+
+   Levels:
+   0-1: +1 without carry (build confidence: 12→13, 35→36)
+   2-3: +1 WITH carry across tens (9→10, 19→20, 49→50)
+   4:   +1 WITH carry across hundreds (99→100, 109→110, 199→200)
+   5:   -1 without borrow (15→14, 43→42)
+   6:   -1 WITH borrow across tens (10→9, 20→19, 50→49)
+   7:   +10 simple, then with carry (25→35, 93→103)
+   8:   -10 simple, then with borrow (45→35, 105→95)
+   9-10: mixed all types
+─── */
+
+function generateProblem(
+  difficulty: number,
+  mode: UserMode,
+  lastProblems: Problem[],
+): Problem {
+  const maxAttempts = 20;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const p = generateProblemInner(difficulty, mode);
+    // Ensure no duplicate of recent problems
+    const isDuplicate = lastProblems.some(
+      (prev) => prev.current === p.current && prev.step === p.step,
+    );
+    if (!isDuplicate) return p;
+  }
+  // Fallback: return whatever we generated
+  return generateProblemInner(difficulty, mode);
+}
+
+function generateProblemInner(difficulty: number, mode: UserMode): Problem {
   let step: StepMode;
+  let current: number;
 
   if (mode === "plus") {
-    step = difficulty < 5 ? 1 : (Math.random() > 0.4 ? 1 : 10);
-  } else if (mode === "minus") {
-    step = difficulty < 5 ? -1 : (Math.random() > 0.4 ? -1 : -10);
-  } else {
-    // mix
-    if (difficulty < 3) {
-      step = Math.random() > 0.4 ? 1 : -1;
-    } else if (difficulty < 6) {
-      const r = Math.random();
-      step = r < 0.25 ? 1 : r < 0.5 ? -1 : r < 0.75 ? 10 : -10;
+    // Plus mode: progressive difficulty for + steps
+    if (difficulty <= 1) {
+      step = 1;
+      current = pickFromArray(NO_CARRY_PLUS1);
+    } else if (difficulty <= 3) {
+      step = 1;
+      current = pickFromArray(CARRY_TENS_PLUS1);
+    } else if (difficulty === 4) {
+      step = 1;
+      // Mix carry-tens with carry-hundreds
+      current = Math.random() < 0.5
+        ? pickFromArray(CARRY_HUNDREDS_PLUS1)
+        : pickFromArray(CARRY_TENS_PLUS1);
+    } else if (difficulty <= 6) {
+      // Introduce +10
+      if (Math.random() < 0.5) {
+        step = 1;
+        current = pickFromArray([...CARRY_TENS_PLUS1, ...CARRY_HUNDREDS_PLUS1]);
+      } else {
+        step = 10;
+        current = difficulty < 6
+          ? pickFromArray(SIMPLE_PLUS10)
+          : pickFromArray([...SIMPLE_PLUS10, ...CARRY_PLUS10]);
+      }
     } else {
+      // High difficulty: any positive step
+      if (Math.random() < 0.5) {
+        step = 1;
+        current = pickFromArray([...NO_CARRY_PLUS1, ...CARRY_TENS_PLUS1, ...CARRY_HUNDREDS_PLUS1]);
+      } else {
+        step = 10;
+        current = pickFromArray([...SIMPLE_PLUS10, ...CARRY_PLUS10]);
+      }
+    }
+  } else if (mode === "minus") {
+    // Minus mode: progressive difficulty for - steps
+    if (difficulty <= 1) {
+      step = -1;
+      current = pickFromArray(NO_BORROW_MINUS1);
+    } else if (difficulty <= 3) {
+      step = -1;
+      current = pickFromArray(BORROW_TENS_MINUS1);
+    } else if (difficulty === 4) {
+      step = -1;
+      current = Math.random() < 0.5
+        ? pickFromArray(BORROW_HUNDREDS_MINUS1)
+        : pickFromArray(BORROW_TENS_MINUS1);
+    } else if (difficulty <= 6) {
+      if (Math.random() < 0.5) {
+        step = -1;
+        current = pickFromArray([...BORROW_TENS_MINUS1, ...BORROW_HUNDREDS_MINUS1]);
+      } else {
+        step = -10;
+        current = difficulty < 6
+          ? pickFromArray(SIMPLE_MINUS10)
+          : pickFromArray([...SIMPLE_MINUS10, ...BORROW_MINUS10]);
+      }
+    } else {
+      if (Math.random() < 0.5) {
+        step = -1;
+        current = pickFromArray([...NO_BORROW_MINUS1, ...BORROW_TENS_MINUS1, ...BORROW_HUNDREDS_MINUS1]);
+      } else {
+        step = -10;
+        current = pickFromArray([...SIMPLE_MINUS10, ...BORROW_MINUS10]);
+      }
+    }
+  } else {
+    // Mix mode: uses difficulty to introduce concepts one by one
+    if (difficulty <= 1) {
+      step = Math.random() < 0.6 ? 1 : -1;
+      current = step === 1 ? pickFromArray(NO_CARRY_PLUS1) : pickFromArray(NO_BORROW_MINUS1);
+    } else if (difficulty <= 3) {
+      step = Math.random() < 0.5 ? 1 : -1;
+      current = step === 1
+        ? pickFromArray(CARRY_TENS_PLUS1)
+        : pickFromArray(BORROW_TENS_MINUS1);
+    } else if (difficulty <= 5) {
       const r = Math.random();
-      step = r < 0.25 ? 1 : r < 0.5 ? -1 : r < 0.75 ? 10 : -10;
+      if (r < 0.3) {
+        step = 1;
+        current = pickFromArray([...CARRY_TENS_PLUS1, ...CARRY_HUNDREDS_PLUS1]);
+      } else if (r < 0.6) {
+        step = -1;
+        current = pickFromArray([...BORROW_TENS_MINUS1, ...BORROW_HUNDREDS_MINUS1]);
+      } else if (r < 0.8) {
+        step = 10;
+        current = pickFromArray(SIMPLE_PLUS10);
+      } else {
+        step = -10;
+        current = pickFromArray(SIMPLE_MINUS10);
+      }
+    } else {
+      // Full mix
+      const r = Math.random();
+      if (r < 0.25) {
+        step = 1;
+        current = pickFromArray([...CARRY_TENS_PLUS1, ...CARRY_HUNDREDS_PLUS1, ...NO_CARRY_PLUS1]);
+      } else if (r < 0.5) {
+        step = -1;
+        current = pickFromArray([...BORROW_TENS_MINUS1, ...BORROW_HUNDREDS_MINUS1, ...NO_BORROW_MINUS1]);
+      } else if (r < 0.75) {
+        step = 10;
+        current = pickFromArray([...SIMPLE_PLUS10, ...CARRY_PLUS10]);
+      } else {
+        step = -10;
+        current = pickFromArray([...SIMPLE_MINUS10, ...BORROW_MINUS10]);
+      }
     }
   }
 
-  let current: number;
+  return { current, step, answer: current + step };
+}
+
+function pickFromArray<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ─── Number pools for each concept ───
+
+// +1 without carry (ones digit is NOT 9)
+const NO_CARRY_PLUS1 = [
+  2, 5, 8, 11, 14, 17, 22, 25, 31, 36,
+  42, 45, 53, 57, 63, 71, 84, 93, 102, 115,
+  124, 136, 141, 155, 163, 172, 181,
+];
+
+// +1 WITH carry across tens boundary (ones digit IS 9)
+const CARRY_TENS_PLUS1 = [
+  9, 19, 29, 39, 49, 59, 69, 79, 89,
+  109, 119, 129, 139, 149, 159, 169, 179, 189,
+];
+
+// +1 WITH carry across hundreds boundary (99→100, 199→200)
+const CARRY_HUNDREDS_PLUS1 = [99, 109, 199];
+
+// -1 without borrow (ones digit is NOT 0)
+const NO_BORROW_MINUS1 = [
+  3, 5, 8, 12, 15, 18, 23, 26, 34, 37,
+  43, 47, 55, 62, 68, 75, 83, 91, 103, 116,
+  127, 134, 148, 156, 165, 173, 182,
+];
+
+// -1 WITH borrow across tens boundary (ones digit IS 0)
+const BORROW_TENS_MINUS1 = [
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  110, 120, 130, 140, 150, 160, 170, 180, 190,
+];
+
+// -1 WITH borrow across hundreds (100→99, 200→199)
+const BORROW_HUNDREDS_MINUS1 = [100, 110, 200];
+
+// +10 simple (no carry across hundreds)
+const SIMPLE_PLUS10 = [
+  5, 12, 23, 31, 42, 55, 63, 71, 82, 14,
+  25, 36, 44, 53, 61, 75, 83,
+];
+
+// +10 WITH carry across hundreds (90s→100s, 190s→200s)
+const CARRY_PLUS10 = [
+  90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+  190, 191, 192, 193, 194, 195,
+];
+
+// -10 simple (no borrow across hundreds)
+const SIMPLE_MINUS10 = [
+  15, 22, 33, 41, 52, 65, 73, 81, 94,
+  115, 126, 134, 143, 155, 162, 174, 185,
+];
+
+// -10 WITH borrow across hundreds (100-109→90-99, 200-209→190-199)
+const BORROW_MINUS10 = [
+  100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+  200, 201, 202, 203, 204, 205,
+];
+
+/* ─── Feedback messages that explain the math ─── */
+function getCarryType(problem: Problem): "carry_tens" | "carry_hundreds" | "borrow_tens" | "borrow_hundreds" | "carry_tens_10" | "borrow_tens_10" | "simple" {
+  const { current, step } = problem;
 
   if (step === 1) {
-    const carryPoints = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99, 109, 119, 129, 139, 149, 159, 169, 179, 189, 199];
-    const easyPoints = Array.from({ length: 15 }, () => Math.floor(Math.random() * 199) + 1);
-    const pool = difficulty < 2 ? carryPoints.slice(0, 5) : [...carryPoints, ...easyPoints];
-    current = pool[Math.floor(Math.random() * pool.length)];
-  } else if (step === -1) {
-    const borrowPoints = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
-    const easyPoints = Array.from({ length: 15 }, () => Math.floor(Math.random() * 199) + 2);
-    const pool = difficulty < 2 ? borrowPoints.slice(0, 5) : [...borrowPoints, ...easyPoints];
-    current = pool[Math.floor(Math.random() * pool.length)];
-  } else if (step === 10) {
-    const carryPoints = [90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 190, 191, 192, 193];
-    const easyPoints = Array.from({ length: 15 }, () =>
-      Math.floor(Math.random() * 19) * 10 + Math.floor(Math.random() * 10),
-    );
-    const pool = difficulty < 5 ? carryPoints.slice(0, 5).concat(easyPoints.slice(0, 5)) : [...carryPoints, ...easyPoints];
-    current = pool[Math.floor(Math.random() * pool.length)];
-  } else {
-    // step === -10
-    const borrowPoints = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 200, 201, 202, 203];
-    const easyPoints = Array.from({ length: 15 }, () =>
-      Math.floor(Math.random() * 19) * 10 + Math.floor(Math.random() * 10) + 10,
-    );
-    const pool = difficulty < 5 ? borrowPoints.slice(0, 5).concat(easyPoints.slice(0, 5)) : [...borrowPoints, ...easyPoints];
-    current = pool[Math.floor(Math.random() * pool.length)];
+    if (current % 10 === 9 && current % 100 === 99) return "carry_hundreds";
+    if (current % 10 === 9) return "carry_tens";
+    return "simple";
   }
+  if (step === -1) {
+    if (current % 10 === 0 && current % 100 === 0) return "borrow_hundreds";
+    if (current % 10 === 0) return "borrow_tens";
+    return "simple";
+  }
+  if (step === 10) {
+    if (current % 100 >= 90) return "carry_tens_10";
+    return "simple";
+  }
+  if (step === -10) {
+    if (current % 100 < 10) return "borrow_tens_10";
+    return "simple";
+  }
+  return "simple";
+}
 
-  return { current, step, answer: current + step };
+function getSuccessMessage(problem: Problem): string {
+  const { current, step, answer } = problem;
+  const carryType = getCarryType(problem);
+
+  switch (carryType) {
+    case "carry_tens":
+      return `すごい！ ${current} の つぎは ${answer}！\n一のくらい ${current % 10}→0、十のくらいが 1 ふえたよ！`;
+    case "carry_hundreds":
+      return `すごい！ ${current} の つぎは ${answer}！\n一のくらい 9→0、十のくらい 9→0、百のくらいが 1 ふえたよ！`;
+    case "borrow_tens":
+      return `すごい！ ${current} の まえは ${answer}！\n一のくらい 0→9、十のくらいが 1 へったよ！`;
+    case "borrow_hundreds":
+      return `すごい！ ${current} の まえは ${answer}！\n一のくらい 0→9、十のくらい 0→9、百のくらいが 1 へったよ！`;
+    case "carry_tens_10":
+      return `すごい！ ${current}＋10＝${answer}！\n十のくらい ${Math.floor((current % 100) / 10)}→0、百のくらいが 1 ふえたよ！`;
+    case "borrow_tens_10":
+      return `すごい！ ${current}−10＝${answer}！\n十のくらい ${Math.floor((current % 100) / 10)}→9、百のくらいが 1 へったよ！`;
+    default:
+      return `せいかい！ ${current} ${step > 0 ? "+" : ""}${step} = ${answer}`;
+  }
+}
+
+function getWrongMessage(problem: Problem): string {
+  const { current, step, answer } = problem;
+  const carryType = getCarryType(problem);
+
+  switch (carryType) {
+    case "carry_tens":
+      return `おしい！ こたえは ${answer}！\n一のくらいが 9 のとき、＋1 すると 十のくらいが 1 ふえるよ`;
+    case "carry_hundreds":
+      return `おしい！ こたえは ${answer}！\n99＋1＝100！ 百のくらいが 1 ふえるよ`;
+    case "borrow_tens":
+      return `おしい！ こたえは ${answer}！\n一のくらいが 0 のとき、−1 すると 十のくらいが 1 へるよ`;
+    case "borrow_hundreds":
+      return `おしい！ こたえは ${answer}！\n100−1＝99！ 百のくらいが 1 へるよ`;
+    case "carry_tens_10":
+      return `おしい！ こたえは ${answer}！\n十のくらい ${Math.floor((current % 100) / 10)}＋1 で百のくらいが 1 ふえるよ`;
+    case "borrow_tens_10":
+      return `おしい！ こたえは ${answer}！\n十のくらいが ${Math.floor((current % 100) / 10)} のとき −10 すると 百のくらいが 1 へるよ`;
+    default:
+      return `おしい！ ${current} ${step > 0 ? "+" : ""}${step} = ${answer} だよ`;
+  }
 }
 
 function stepLabel(step: StepMode): string {
@@ -81,7 +314,7 @@ const MODE_OPTIONS: { value: UserMode; label: string }[] = [
 
 export default function NumberLinePage() {
   const [mode, setMode] = useState<UserMode>("plus");
-  const [problem, setProblem] = useState<Problem>(() => generateProblem(0, "plus"));
+  const [problem, setProblem] = useState<Problem>(() => generateProblem(0, "plus", []));
   const [userAnswer, setUserAnswer] = useState("");
   const [showReward, setShowReward] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -92,6 +325,7 @@ export default function NumberLinePage() {
   const [numbersOnLine, setNumbersOnLine] = useState<number[]>([]);
   const correctCount = useRef(0);
   const totalCount = useRef(0);
+  const lastProblems = useRef<Problem[]>([]);
 
   useEffect(() => {
     const center = problem.current;
@@ -107,7 +341,7 @@ export default function NumberLinePage() {
 
   const switchMode = (newMode: UserMode) => {
     setMode(newMode);
-    setProblem(generateProblem(difficulty, newMode));
+    setProblem(generateProblem(difficulty, newMode, lastProblems.current));
     setUserAnswer("");
     setCleared(false);
     setShowCorrectAnswer(false);
@@ -126,23 +360,13 @@ export default function NumberLinePage() {
       setStreak(newStreak);
       setCleared(true);
 
-      const isCarry =
-        (problem.step === 1 && problem.current % 10 === 9) ||
-        (problem.step === -1 && problem.current % 10 === 0) ||
-        (problem.step === 10 && problem.current % 100 >= 90) ||
-        (problem.step === -10 && problem.current % 100 < 10);
-
-      if (isCarry) {
+      const carryType = getCarryType(problem);
+      if (carryType !== "simple") {
         playBundle();
-        setMessage(
-          problem.step === -1
-            ? `すごい！ ${problem.current} の まえは ${problem.answer}！くりさがり できたね！`
-            : `すごい！ ${problem.current} の つぎは ${problem.answer}！くりあがり できたね！`,
-        );
       } else {
         playSuccess();
-        setMessage(`せいかい！ ${problem.current} ${problem.step > 0 ? "+" : ""}${problem.step} = ${problem.answer}`);
       }
+      setMessage(getSuccessMessage(problem));
 
       setTimeout(() => setShowReward(true), 800);
       setDifficulty(Math.min(10, difficulty + 1));
@@ -150,12 +374,18 @@ export default function NumberLinePage() {
       playError();
       setStreak(0);
       setShowCorrectAnswer(true);
-      setMessage(`おしい！ ${problem.current} ${problem.step > 0 ? "+" : ""}${problem.step} = ${problem.answer} だよ`);
+      setMessage(getWrongMessage(problem));
+      // On wrong answer, decrease difficulty slightly
+      setDifficulty(Math.max(0, difficulty - 1));
     }
   }, [userAnswer, problem, streak, difficulty]);
 
   const nextProblem = () => {
-    setProblem(generateProblem(difficulty, mode));
+    // Track last problems to avoid duplicates
+    lastProblems.current = [...lastProblems.current.slice(-4), problem];
+
+    const newProblem = generateProblem(difficulty, mode, lastProblems.current);
+    setProblem(newProblem);
     setUserAnswer("");
     setCleared(false);
     setShowCorrectAnswer(false);
@@ -176,6 +406,10 @@ export default function NumberLinePage() {
     playPop();
   };
 
+  /* ─── Level indicator ─── */
+  const levelName = difficulty <= 1 ? "きほん" : difficulty <= 4 ? "ふつう" : difficulty <= 7 ? "むずかしい" : "マスター";
+  const levelStars = difficulty <= 1 ? "⭐" : difficulty <= 4 ? "⭐⭐" : difficulty <= 7 ? "⭐⭐⭐" : "👑";
+
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
@@ -185,6 +419,13 @@ export default function NumberLinePage() {
             <span className="text-purple-600 text-sm font-bold">かぞえよう</span>
             <span className="text-orange-500 text-xs">{streak}🔥</span>
           </div>
+        </div>
+
+        {/* level indicator */}
+        <div className="text-center mb-1">
+          <span className="text-xs text-purple-400">
+            {levelStars} {levelName} Lv.{difficulty}
+          </span>
         </div>
 
         {/* mode toggle */}
@@ -256,7 +497,7 @@ export default function NumberLinePage() {
               cleared ? "bg-green-50 border border-green-200" : showCorrectAnswer ? "bg-red-50 border border-red-200" : "bg-white/80"
             }`}
           >
-            <p className="text-gray-700 text-sm">{message}</p>
+            <p className="text-gray-700 text-sm whitespace-pre-line">{message}</p>
           </div>
         )}
 
