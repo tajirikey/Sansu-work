@@ -61,7 +61,7 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
   // Cleanup
   useEffect(() => {
     return () => {
-      if (spinTimer.current) clearInterval(spinTimer.current);
+      if (spinTimer.current) cancelAnimationFrame(spinTimer.current as unknown as number);
     };
   }, []);
 
@@ -101,7 +101,7 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
       velocityY.current = 0;
       setIsAnimating(false);
       if (spinTimer.current) {
-        clearInterval(spinTimer.current);
+        cancelAnimationFrame(spinTimer.current as unknown as number);
         spinTimer.current = null;
       }
     }
@@ -135,14 +135,18 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
     const dx = e.clientX - startX.current;
     const dy = e.clientY - startY.current;
 
-    const newRY = currentRY.current + dx * 0.4;
-    const newRX = currentRX.current - dy * 0.4;
+    const newRY = currentRY.current + dx * 0.5;
+    const newRX = currentRX.current - dy * 0.5;
 
-    setRotateX(Math.max(-80, Math.min(80, newRX)));
-    setRotateY(Math.max(-80, Math.min(80, newRY)));
+    // No clamp: free rotation in any direction
+    setRotateX(newRX);
+    setRotateY(newRY);
 
-    const totalAngle = Math.abs(newRX) + Math.abs(newRY);
-    setScale(1 - Math.min(totalAngle * 0.001, 0.1));
+    // Subtle squish based on angular distance from flat
+    const normRX = ((newRX % 360) + 360) % 360;
+    const normRY = ((newRY % 360) + 360) % 360;
+    const distFromFlat = Math.min(normRX, 360 - normRX) + Math.min(normRY, 360 - normRY);
+    setScale(1 - Math.min(distFromFlat * 0.0005, 0.08));
   }, [getPointerDist]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
@@ -162,35 +166,45 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
     const vy = velocityY.current;
     const speed = Math.sqrt(vx * vx + vy * vy);
 
-    if (speed > 0.8) {
+    if (speed > 0.2) {
+      // Flick → free spin with strong inertia, no rotation clamp
       let rx = rotateX;
       let ry = rotateY;
-      let mvx = vx * 80;
-      let mvy = -vy * 80;
+      // Big velocity multiplier for that "シャーッ" feel
+      let mvx = vx * 400;
+      let mvy = -vy * 400;
 
-      spinTimer.current = setInterval(() => {
-        mvx *= 0.92;
-        mvy *= 0.92;
-        ry += mvx * 0.05;
-        rx += mvy * 0.05;
-        ry = Math.max(-180, Math.min(180, ry));
-        rx = Math.max(-180, Math.min(180, rx));
+      const tick = () => {
+        // Gentle friction: spins a long time
+        mvx *= 0.975;
+        mvy *= 0.975;
+        ry += mvx * 0.016;
+        rx += mvy * 0.016;
         setRotateX(rx);
         setRotateY(ry);
+        setScale(1);
 
-        if (Math.abs(mvx) < 0.5 && Math.abs(mvy) < 0.5) {
-          if (spinTimer.current) clearInterval(spinTimer.current);
+        if (Math.abs(mvx) > 0.3 || Math.abs(mvy) > 0.3) {
+          spinTimer.current = requestAnimationFrame(tick) as unknown as ReturnType<typeof setInterval>;
+        } else {
           spinTimer.current = null;
+          // Smoothly settle to nearest "nice" angle (0 or 180)
+          const snapRY = Math.round(ry / 180) * 180;
+          const snapRX = Math.round(rx / 180) * 180;
           setIsAnimating(true);
-          setRotateX(0);
-          setRotateY(0);
+          setRotateX(snapRX);
+          setRotateY(snapRY);
           setScale(1);
         }
-      }, 16);
+      };
+      spinTimer.current = requestAnimationFrame(tick) as unknown as ReturnType<typeof setInterval>;
     } else {
+      // Light release: spring back to nearest face
+      const snapRY = Math.round(rotateY / 180) * 180;
+      const snapRX = Math.round(rotateX / 180) * 180;
       setIsAnimating(true);
-      setRotateX(0);
-      setRotateY(0);
+      setRotateX(snapRX);
+      setRotateY(snapRY);
       setScale(1);
     }
   }, [rotateX, rotateY]);
