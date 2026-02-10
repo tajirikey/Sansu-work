@@ -1,13 +1,202 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getAllItems, getCollectedItems, resetCollection } from "@/lib/rewards";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { getAllItems, getCollectedItems, resetCollection, MinecraftItem } from "@/lib/rewards";
 import PixelItem from "./PixelItem";
 import Link from "next/link";
 
+/* ─── 3D Interactive Item Viewer ─── */
+function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => void }) {
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const currentRX = useRef(0);
+  const currentRY = useRef(0);
+  const velocityX = useRef(0);
+  const velocityY = useRef(0);
+  const lastX = useRef(0);
+  const lastY = useRef(0);
+  const lastTime = useRef(0);
+  const spinTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Entrance animation
+  useEffect(() => {
+    requestAnimationFrame(() => setScale(1));
+  }, []);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (spinTimer.current) clearInterval(spinTimer.current);
+    };
+  }, []);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation();
+    dragging.current = true;
+    startX.current = e.clientX;
+    startY.current = e.clientY;
+    currentRX.current = rotateX;
+    currentRY.current = rotateY;
+    lastX.current = e.clientX;
+    lastY.current = e.clientY;
+    lastTime.current = Date.now();
+    velocityX.current = 0;
+    velocityY.current = 0;
+    setIsAnimating(false);
+    if (spinTimer.current) {
+      clearInterval(spinTimer.current);
+      spinTimer.current = null;
+    }
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [rotateX, rotateY]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const now = Date.now();
+    const dt = now - lastTime.current;
+    if (dt > 0) {
+      velocityX.current = (e.clientX - lastX.current) / dt;
+      velocityY.current = (e.clientY - lastY.current) / dt;
+    }
+    lastX.current = e.clientX;
+    lastY.current = e.clientY;
+    lastTime.current = now;
+
+    const dx = e.clientX - startX.current;
+    const dy = e.clientY - startY.current;
+
+    // Map drag to rotation (Y axis for horizontal, X axis for vertical, inverted)
+    const newRY = currentRY.current + dx * 0.4;
+    const newRX = currentRX.current - dy * 0.4;
+
+    setRotateX(Math.max(-60, Math.min(60, newRX)));
+    setRotateY(Math.max(-60, Math.min(60, newRY)));
+
+    // Scale squish based on rotation amount
+    const totalAngle = Math.abs(newRX) + Math.abs(newRY);
+    setScale(1 - Math.min(totalAngle * 0.001, 0.1));
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+
+    const vx = velocityX.current;
+    const vy = velocityY.current;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+
+    if (speed > 0.8) {
+      // Flick: spin with momentum then spring back
+      let rx = rotateX;
+      let ry = rotateY;
+      let mvx = vx * 80;
+      let mvy = -vy * 80;
+
+      spinTimer.current = setInterval(() => {
+        mvx *= 0.92;
+        mvy *= 0.92;
+        ry += mvx * 0.05;
+        rx += mvy * 0.05;
+        ry = Math.max(-90, Math.min(90, ry));
+        rx = Math.max(-90, Math.min(90, rx));
+        setRotateX(rx);
+        setRotateY(ry);
+
+        if (Math.abs(mvx) < 0.5 && Math.abs(mvy) < 0.5) {
+          if (spinTimer.current) clearInterval(spinTimer.current);
+          spinTimer.current = null;
+          // Spring back to center
+          setIsAnimating(true);
+          setRotateX(0);
+          setRotateY(0);
+          setScale(1);
+        }
+      }, 16);
+    } else {
+      // No flick: spring back to center
+      setIsAnimating(true);
+      setRotateX(0);
+      setRotateY(0);
+      setScale(1);
+    }
+  }, [rotateX, rotateY]);
+
+  const rarityConfig = {
+    common: { label: "コモン", color: "text-gray-500", border: "border-gray-300", bg: "bg-gray-50" },
+    uncommon: { label: "アンコモン", color: "text-green-600", border: "border-green-300", bg: "bg-green-50" },
+    rare: { label: "レア", color: "text-blue-600", border: "border-blue-300", bg: "bg-blue-50" },
+    epic: { label: "エピック", color: "text-purple-600", border: "border-purple-300", bg: "bg-purple-50" },
+  };
+  const rc = rarityConfig[item.rarity];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="flex flex-col items-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 3D card */}
+        <div
+          ref={containerRef}
+          className={`touch-none select-none rounded-2xl border-4 ${rc.border} ${rc.bg} p-6 shadow-2xl`}
+          style={{
+            perspective: "800px",
+          }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+        >
+          <div
+            style={{
+              transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`,
+              transition: isAnimating ? "transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)" : "none",
+              transformStyle: "preserve-3d",
+            }}
+          >
+            <PixelItem item={item} size={200} />
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="mt-4 text-center">
+          <p className="text-white text-2xl font-bold drop-shadow-lg">{item.nameJa}</p>
+          <p className="text-gray-300 text-sm">{item.name}</p>
+          <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold ${rc.bg} ${rc.color} border ${rc.border}`}>
+            {rc.label}
+          </span>
+        </div>
+
+        {/* Hint */}
+        <p className="text-gray-400 text-xs mt-4 animate-pulse">
+          スワイプで まわせるよ！
+        </p>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="mt-4 px-6 py-2 rounded-xl bg-white/90 text-gray-700 font-bold text-sm active:scale-95 shadow-md"
+        >
+          とじる
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Collection Page ─── */
 export default function Collection() {
   const [collected, setCollected] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MinecraftItem | null>(null);
   const allItems = getAllItems();
 
   useEffect(() => {
@@ -37,12 +226,14 @@ export default function Collection() {
             {allItems.map((item) => {
               const isCollected = collected.includes(item.id);
               return (
-                <div
+                <button
                   key={item.id}
-                  className={`aspect-square rounded-lg flex flex-col items-center justify-center p-2 ${
+                  onClick={() => isCollected && setSelectedItem(item)}
+                  disabled={!isCollected}
+                  className={`aspect-square rounded-lg flex flex-col items-center justify-center p-2 transition-all active:scale-90 ${
                     isCollected
-                      ? "bg-amber-50 border border-amber-200"
-                      : "bg-gray-100 border border-gray-200"
+                      ? "bg-amber-50 border border-amber-200 hover:bg-amber-100 cursor-pointer"
+                      : "bg-gray-100 border border-gray-200 cursor-default"
                   }`}
                 >
                   {isCollected ? (
@@ -55,7 +246,7 @@ export default function Collection() {
                   ) : (
                     <div className="text-3xl text-gray-300">？</div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -93,6 +284,11 @@ export default function Collection() {
           )}
         </div>
       </div>
+
+      {/* Item Viewer Modal */}
+      {selectedItem && (
+        <ItemViewer item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
     </div>
   );
 }
