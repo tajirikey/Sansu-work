@@ -172,21 +172,22 @@ const MODE_OPTIONS: { value: UserMode; label: string }[] = [
 type PlaceType = "hundreds" | "tens" | "ones";
 
 /* ─── Animated digit display ─── */
-function AnimatedDigit({ value, direction }: { value: number; direction: "up" | "down" | null }) {
+function AnimatedDigit({ value, animDir }: { value: number; animDir: "up" | "down" | null }) {
   const [display, setDisplay] = useState(value);
   const [anim, setAnim] = useState<string | null>(null);
   const prevValue = useRef(value);
 
   useEffect(() => {
     if (value !== prevValue.current) {
-      const dir = direction || (value > prevValue.current ? "up" : "down");
+      // Use explicit direction from parent (not inferred from value change)
+      const dir = animDir || "up";
       setAnim(dir === "up" ? "animate-roll-up" : "animate-roll-down");
       const t1 = setTimeout(() => setDisplay(value), 170);
       const t2 = setTimeout(() => setAnim(null), 360);
       prevValue.current = value;
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }
-  }, [value, direction]);
+  }, [value, animDir]);
 
   return (
     <div className="overflow-hidden relative flex items-center justify-center" style={{ height: 56 }}>
@@ -324,7 +325,7 @@ function CarryOverlay({ anim }: { anim: CarryAnimInfo }) {
 
 /* ─── Single Place Value Column ─── */
 function PlaceValueColumn({
-  label, value, onIncrement, onDecrement, type, disabled, dotAnim,
+  label, value, onIncrement, onDecrement, type, disabled, dotAnim, animDir,
 }: {
   label: string;
   value: number;
@@ -333,6 +334,7 @@ function PlaceValueColumn({
   type: PlaceType;
   disabled: boolean;
   dotAnim?: "gather" | "scatter" | null;
+  animDir: "up" | "down" | null;
 }) {
   const colors = {
     hundreds: {
@@ -355,16 +357,6 @@ function PlaceValueColumn({
     },
   }[type];
 
-  const direction = useRef<"up" | "down" | null>(null);
-  const prevVal = useRef(value);
-
-  useEffect(() => {
-    if (value !== prevVal.current) {
-      direction.current = value > prevVal.current ? "up" : "down";
-      prevVal.current = value;
-    }
-  }, [value]);
-
   // Long-press repeat
   const repeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const handlePointerDown = (action: () => void) => {
@@ -381,7 +373,7 @@ function PlaceValueColumn({
       <span className={`text-sm font-bold ${colors.text}`}>{label}</span>
 
       {/* Animated digit */}
-      <AnimatedDigit value={value} direction={direction.current} />
+      <AnimatedDigit value={value} animDir={animDir} />
 
       {/* Dots area */}
       <div className="flex-1 flex items-start justify-center w-full">
@@ -438,6 +430,10 @@ export default function NumberLinePage() {
   const [dotAnimH, setDotAnimH] = useState<"gather" | "scatter" | null>(null);
   const [dotAnimT, setDotAnimT] = useState<"gather" | "scatter" | null>(null);
   const [dotAnimO, setDotAnimO] = useState<"gather" | "scatter" | null>(null);
+  // Explicit animation direction: "up" for +, "down" for -
+  const [dirH, setDirH] = useState<"up" | "down" | null>(null);
+  const [dirT, setDirT] = useState<"up" | "down" | null>(null);
+  const [dirO, setDirO] = useState<"up" | "down" | null>(null);
   const animLock = useRef(false);
 
   const composedAnswer = inputH * 100 + inputT * 10 + inputO;
@@ -468,6 +464,9 @@ export default function NumberLinePage() {
         // Phase 2: Update digits
         if (type === "carry") {
           if (from === "ones") {
+            // ones 9→0 (rolls UP), tens +1 (rolls UP)
+            setDirO("up");
+            setDirT("up");
             setInputO(0);
             setDotAnimO(null);
             // Check cascade: tens might also carry
@@ -475,6 +474,8 @@ export default function NumberLinePage() {
               if (prev === 9) {
                 // Cascade carry tens→hundreds
                 setTimeout(() => {
+                  setDirT("up");
+                  setDirH("up");
                   setInputT(0);
                   setInputH(ph => Math.min(9, ph + 1));
                   setDotAnimH("scatter");
@@ -487,7 +488,9 @@ export default function NumberLinePage() {
             setDotAnimT("scatter");
             setTimeout(() => setDotAnimT(null), 400);
           } else {
-            // tens → hundreds
+            // tens 9→0 (rolls UP), hundreds +1 (rolls UP)
+            setDirT("up");
+            setDirH("up");
             setInputT(0);
             setInputH(prev => Math.min(9, prev + 1));
             setDotAnimT(null);
@@ -497,11 +500,15 @@ export default function NumberLinePage() {
         } else {
           // Borrow
           if (from === "tens") {
-            // tens→ones
+            // tens -1 (rolls DOWN), ones 0→9 (rolls DOWN)
+            setDirT("down");
+            setDirO("down");
             setInputT(prev => {
               if (prev === 0) {
                 // Cascade borrow from hundreds
                 setTimeout(() => {
+                  setDirH("down");
+                  setDirT("down");
                   setInputH(ph => Math.max(0, ph - 1));
                   setInputT(9);
                   setDotAnimT("scatter");
@@ -516,7 +523,9 @@ export default function NumberLinePage() {
             setDotAnimO("scatter");
             setTimeout(() => setDotAnimO(null), 400);
           } else {
-            // hundreds→tens
+            // hundreds -1 (rolls DOWN), tens 0→9 (rolls DOWN)
+            setDirH("down");
+            setDirT("down");
             setInputH(prev => Math.max(0, prev - 1));
             setDotAnimH(null);
             setInputT(9);
@@ -538,24 +547,25 @@ export default function NumberLinePage() {
 
     if (place === "ones") {
       if (inputO < 9) {
+        setDirO("up");
         setInputO(prev => prev + 1);
         setDotAnimO("scatter");
         setTimeout(() => setDotAnimO(null), 300);
       } else {
-        // Carry: ones 9 → 0, tens + 1
         runCarryAnimation("ones", "tens", "carry");
       }
     } else if (place === "tens") {
       if (inputT < 9) {
+        setDirT("up");
         setInputT(prev => prev + 1);
         setDotAnimT("scatter");
         setTimeout(() => setDotAnimT(null), 300);
       } else {
-        // Carry: tens 9 → 0, hundreds + 1
         runCarryAnimation("tens", "hundreds", "carry");
       }
     } else {
       if (inputH < 9) {
+        setDirH("up");
         setInputH(prev => prev + 1);
         setDotAnimH("scatter");
         setTimeout(() => setDotAnimH(null), 300);
@@ -569,20 +579,21 @@ export default function NumberLinePage() {
 
     if (place === "ones") {
       if (inputO > 0) {
+        setDirO("down");
         setInputO(prev => prev - 1);
       } else if (inputT > 0 || inputH > 0) {
-        // Borrow: ones 0 → 9, tens - 1
         runCarryAnimation("tens", "ones", "borrow");
       }
     } else if (place === "tens") {
       if (inputT > 0) {
+        setDirT("down");
         setInputT(prev => prev - 1);
       } else if (inputH > 0) {
-        // Borrow: tens 0 → 9, hundreds - 1
         runCarryAnimation("hundreds", "tens", "borrow");
       }
     } else {
       if (inputH > 0) {
+        setDirH("down");
         setInputH(prev => prev - 1);
       }
     }
@@ -737,6 +748,7 @@ export default function NumberLinePage() {
                 type="hundreds"
                 disabled={animLock.current}
                 dotAnim={dotAnimH}
+                animDir={dirH}
               />
               <PlaceValueColumn
                 label="十のくらい"
@@ -746,6 +758,7 @@ export default function NumberLinePage() {
                 type="tens"
                 disabled={animLock.current}
                 dotAnim={dotAnimT}
+                animDir={dirT}
               />
               <PlaceValueColumn
                 label="一のくらい"
@@ -755,6 +768,7 @@ export default function NumberLinePage() {
                 type="ones"
                 disabled={animLock.current}
                 dotAnim={dotAnimO}
+                animDir={dirO}
               />
 
               {/* Carry/Borrow overlay */}
