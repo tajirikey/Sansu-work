@@ -165,310 +165,488 @@ const MODE_OPTIONS: { value: UserMode; label: string }[] = [
   { value: "mix", label: "まぜる" },
 ];
 
-/* ─── Dot visualization of a number ─── */
-function DotNumber({ n, highlight, label }: { n: number; highlight?: "before" | "after"; label?: string }) {
-  const h = Math.floor(n / 100);
-  const t = Math.floor((n % 100) / 10);
-  const o = n % 10;
-  const DOT = 10;
+/* ═══════════════════════════════════════════════
+   Place Value Column UI Components
+   ═══════════════════════════════════════════════ */
+
+type PlaceType = "hundreds" | "tens" | "ones";
+
+/* ─── Animated digit display ─── */
+function AnimatedDigit({ value, direction }: { value: number; direction: "up" | "down" | null }) {
+  const [display, setDisplay] = useState(value);
+  const [anim, setAnim] = useState<string | null>(null);
+  const prevValue = useRef(value);
+
+  useEffect(() => {
+    if (value !== prevValue.current) {
+      const dir = direction || (value > prevValue.current ? "up" : "down");
+      setAnim(dir === "up" ? "animate-roll-up" : "animate-roll-down");
+      const t1 = setTimeout(() => setDisplay(value), 170);
+      const t2 = setTimeout(() => setAnim(null), 360);
+      prevValue.current = value;
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }
+  }, [value, direction]);
 
   return (
-    <div className="flex flex-col items-center gap-0.5">
-      {label && <p className="text-[10px] font-bold text-gray-500 mb-0.5">{label}</p>}
-      <div className="flex items-end gap-1.5 flex-wrap justify-center">
-        {/* hundreds */}
-        {Array.from({ length: h }).map((_, i) => (
-          <div key={`h${i}`} className="flex flex-col p-0.5 rounded bg-red-100 border border-red-300" style={{ gap: 1 }}>
+    <div className="overflow-hidden relative flex items-center justify-center" style={{ height: 56 }}>
+      <span className={`text-5xl font-black tabular-nums ${anim || ""}`}>
+        {display}
+      </span>
+    </div>
+  );
+}
+
+/* ─── Dot visualization within a column ─── */
+function ColumnDots({ count, type, animating }: { count: number; type: PlaceType; animating?: "gather" | "scatter" | null }) {
+  const DOT = 8;
+
+  if (type === "ones") {
+    return (
+      <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+        {Array.from({ length: count }).map((_, i) => (
+          <div
+            key={i}
+            className={`rounded-full bg-green-500 shadow-sm ${
+              animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
+            } ${animating === "gather" ? "animate-gather-dots" : ""}`}
+            style={{ width: DOT + 4, height: DOT + 4 }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "tens") {
+    return (
+      <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+        {Array.from({ length: count }).map((_, i) => (
+          <div
+            key={i}
+            className={`inline-flex flex-col p-0.5 rounded bg-blue-50 border border-blue-300 ${
+              animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
+            } ${animating === "gather" ? "animate-gather-dots" : ""}`}
+            style={{ gap: 1 }}
+          >
             {[0, 1].map(row => (
               <div key={row} className="flex" style={{ gap: 1 }}>
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="flex flex-col" style={{ gap: 1 }}>
-                    <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
-                    <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
-                  </div>
+                  <div key={j} className="rounded-full bg-green-500" style={{ width: DOT - 2, height: DOT - 2 }} />
                 ))}
               </div>
             ))}
           </div>
         ))}
-        {/* tens */}
-        {Array.from({ length: t }).map((_, i) => (
-          <div key={`t${i}`} className="flex flex-col p-0.5 rounded bg-blue-100 border border-blue-300" style={{ gap: 1 }}>
-            {[0, 1].map(row => (
-              <div key={row} className="flex" style={{ gap: 1 }}>
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-blue-400" style={{ width: DOT, height: DOT }} />
-                ))}
-              </div>
-            ))}
-          </div>
-        ))}
-        {/* ones */}
-        {o > 0 && (
-          <div className="flex flex-wrap gap-0.5" style={{ maxWidth: 60 }}>
-            {Array.from({ length: o }).map((_, i) => (
-              <div
-                key={`o${i}`}
-                className={`rounded-full border ${
-                  highlight === "after" && i === o - 1
-                    ? "bg-yellow-400 border-yellow-500 animate-pulse"
-                    : "bg-green-400 border-green-500"
-                }`}
-                style={{ width: DOT + 2, height: DOT + 2 }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-      <p className="text-xs font-bold text-gray-700 mt-0.5">
-        <span className="text-red-500">{h > 0 ? `${h}百 ` : ""}</span>
-        <span className="text-blue-500">{t > 0 || h > 0 ? `${t}十 ` : ""}</span>
-        <span className="text-green-600">{o}一</span>
-        <span className="text-gray-500"> ＝ {n}</span>
-      </p>
-    </div>
-  );
-}
-
-/* ─── Carry/borrow visual explanation ─── */
-function CarryVisual({ problem }: { problem: Problem }) {
-  const { current, step, answer } = problem;
-  const ct = getCarryType(problem);
-
-  if (ct === "carry_tens") {
-    const ones = current % 10;
-    const tens = Math.floor(current / 10);
-    return (
-      <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-3 text-center">
-        <p className="text-sm font-bold text-yellow-700 mb-2">くりあがりの しくみ</p>
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <DotNumber n={current} label={`${current}`} />
-          <div className="text-2xl text-yellow-600 font-bold">＋1</div>
-        </div>
-        <div className="my-2 flex items-center justify-center gap-1">
-          <span className="text-green-600 font-bold">一のくらい {ones}こ＋1</span>
-          <span className="text-yellow-600 font-bold">＝ 10こ!</span>
-        </div>
-        <div className="bg-yellow-100 rounded-lg p-2 mb-2 inline-flex items-center gap-2">
-          <div className="flex gap-0.5">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className={`rounded-full ${i < ones ? "bg-green-400 border-green-500" : "bg-yellow-400 border-yellow-500 animate-pulse"} border`} style={{ width: 12, height: 12 }} />
-            ))}
-          </div>
-          <span className="text-lg">→</span>
-          <div className="flex flex-col p-0.5 rounded bg-blue-100 border-2 border-blue-400 animate-bounce" style={{ gap: 1 }}>
-            {[0, 1].map(row => (
-              <div key={row} className="flex" style={{ gap: 1 }}>
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 10, height: 10 }} />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-        <p className="text-sm font-bold text-gray-700">
-          10こ まとめて <span className="text-blue-600">十のたば</span> に！
-        </p>
-        <div className="mt-2">
-          <DotNumber n={answer} label={`→ ${answer}`} />
-        </div>
       </div>
     );
   }
 
-  if (ct === "borrow_tens") {
-    const tens = Math.floor(current / 10);
-    return (
-      <div className="bg-purple-50 border-2 border-purple-300 rounded-xl p-3 text-center">
-        <p className="text-sm font-bold text-purple-700 mb-2">くりさがりの しくみ</p>
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <DotNumber n={current} label={`${current}`} />
-          <div className="text-2xl text-purple-600 font-bold">−1</div>
-        </div>
-        <div className="my-2 flex items-center justify-center gap-1">
-          <span className="text-green-600 font-bold">一のくらいが 0こ…</span>
-          <span className="text-purple-600 font-bold">ひけない!</span>
-        </div>
-        <div className="bg-purple-100 rounded-lg p-2 mb-2 inline-flex items-center gap-2">
-          <div className="flex flex-col p-0.5 rounded bg-blue-100 border-2 border-blue-400" style={{ gap: 1 }}>
-            {[0, 1].map(row => (
-              <div key={row} className="flex" style={{ gap: 1 }}>
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 10, height: 10 }} />
-                ))}
-              </div>
-            ))}
-          </div>
-          <span className="text-lg">→</span>
-          <div className="flex gap-0.5 flex-wrap" style={{ maxWidth: 80 }}>
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className={`rounded-full bg-green-400 border border-green-500 ${i === 9 ? "animate-pulse" : ""}`} style={{ width: 12, height: 12 }} />
-            ))}
-          </div>
-        </div>
-        <p className="text-sm font-bold text-gray-700">
-          <span className="text-blue-600">十のたば</span> をバラして <span className="text-green-600">10こ</span> に！
-        </p>
-        <p className="text-sm text-gray-600 mt-1">そこから 1こ とると <span className="text-green-600 font-bold">9こ</span></p>
-        <div className="mt-2">
-          <DotNumber n={answer} label={`→ ${answer}`} />
-        </div>
-      </div>
-    );
-  }
-
-  // Generic for other carry/borrow types
+  // hundreds
   return (
-    <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-3 text-center">
-      <p className="text-sm font-bold text-orange-700 mb-2">かずの かたち</p>
-      <div className="flex items-center justify-center gap-3 flex-wrap">
-        <DotNumber n={current} label={`${current}`} />
-        <div className="text-xl text-orange-600 font-bold">{step > 0 ? `＋${step}` : `${step}`}</div>
-        <DotNumber n={answer} label={`${answer}`} />
-      </div>
+    <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className={`inline-flex flex-col p-0.5 rounded bg-red-50 border border-red-300 ${
+            animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
+          } ${animating === "gather" ? "animate-gather-dots" : ""}`}
+          style={{ gap: 1 }}
+        >
+          {[0, 1].map(row => (
+            <div key={row} className="flex" style={{ gap: 1 }}>
+              {Array.from({ length: 5 }).map((_, j) => (
+                <div key={j} className="flex flex-col" style={{ gap: 1 }}>
+                  <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
+                  <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
 
-/* ─── Hint: place value decomposition ─── */
-function HintDecomposition({ problem }: { problem: Problem }) {
-  const { current, step } = problem;
-  const h = Math.floor(current / 100);
-  const t = Math.floor((current % 100) / 10);
-  const o = current % 10;
+/* ─── Carry/Borrow animation overlay ─── */
+type CarryAnimInfo = {
+  type: "carry" | "borrow";
+  from: PlaceType;
+  to: PlaceType;
+  phase: number; // 0=announce, 1=transfer, 2=complete
+} | null;
 
-  const ct = getCarryType(problem);
+function CarryOverlay({ anim }: { anim: CarryAnimInfo }) {
+  if (!anim) return null;
 
-  if (ct === "carry_tens") {
+  const isCarry = anim.type === "carry";
+  const fromOnes = anim.from === "ones";
+
+  if (anim.phase === 0) {
+    // Announcement phase
     return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center text-sm">
-        <p className="font-bold text-blue-700 mb-1">ヒント</p>
-        <p className="text-gray-700">
-          {current} ＝ <span className="text-blue-600">{t}0</span> ＋ <span className="text-green-600">{o}</span>
-        </p>
-        <p className="text-gray-700">
-          <span className="text-green-600">{o}</span> ＋ 1 ＝ <span className="text-yellow-600 font-bold">10!</span>
-          → 十のくらいが <span className="text-blue-600 font-bold">1ふえる</span>
-        </p>
+      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+        <div className={`rounded-2xl px-4 py-3 shadow-lg animate-bounce-in ${
+          isCarry ? "bg-yellow-100 border-2 border-yellow-400" : "bg-purple-100 border-2 border-purple-400"
+        }`}>
+          <p className={`text-lg font-black ${isCarry ? "text-yellow-700" : "text-purple-700"}`}>
+            {isCarry ? "10こ！ くりあがり！" : "たりない！ くりさがり！"}
+          </p>
+        </div>
       </div>
     );
   }
-  if (ct === "borrow_tens") {
+
+  if (anim.phase === 1) {
+    // Transfer phase - animated bundle flying between columns
     return (
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 text-center text-sm">
-        <p className="font-bold text-purple-700 mb-1">ヒント</p>
-        <p className="text-gray-700">
-          一のくらいが <span className="text-green-600 font-bold">0</span> → ひけない！
-        </p>
-        <p className="text-gray-700">
-          <span className="text-blue-600">十のたば</span> を 1こ バラすと <span className="text-green-600 font-bold">10</span>
-          → そこから 1ひくと <span className="text-green-600 font-bold">9</span>
-        </p>
+      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+        <div className={`${isCarry ? (fromOnes ? "animate-carry-fly" : "animate-carry-fly") : (fromOnes ? "animate-borrow-fly" : "animate-borrow-fly")}`}>
+          <div className={`rounded-lg px-3 py-2 shadow-lg ${
+            isCarry ? "bg-yellow-300 border-2 border-yellow-500" : "bg-purple-300 border-2 border-purple-500"
+          }`}>
+            <div className="flex gap-0.5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="rounded-full bg-green-500" style={{ width: 6, height: 6 }} />
+              ))}
+            </div>
+            <p className={`text-xs font-black text-center mt-0.5 ${isCarry ? "text-yellow-800" : "text-purple-800"}`}>
+              {isCarry ? "→ たば！" : "→ バラす！"}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
+
+  return null;
+}
+
+/* ─── Single Place Value Column ─── */
+function PlaceValueColumn({
+  label, value, onIncrement, onDecrement, type, disabled, dotAnim,
+}: {
+  label: string;
+  value: number;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  type: PlaceType;
+  disabled: boolean;
+  dotAnim?: "gather" | "scatter" | null;
+}) {
+  const colors = {
+    hundreds: {
+      bg: "bg-red-50/80", border: "border-red-200", text: "text-red-600",
+      btnPlus: "bg-red-100 active:bg-red-200 border-red-200",
+      btnMinus: "bg-red-50 active:bg-red-100 border-red-200",
+      btnTextPlus: "text-red-700", btnTextMinus: "text-red-400",
+    },
+    tens: {
+      bg: "bg-blue-50/80", border: "border-blue-200", text: "text-blue-600",
+      btnPlus: "bg-blue-100 active:bg-blue-200 border-blue-200",
+      btnMinus: "bg-blue-50 active:bg-blue-100 border-blue-200",
+      btnTextPlus: "text-blue-700", btnTextMinus: "text-blue-400",
+    },
+    ones: {
+      bg: "bg-green-50/80", border: "border-green-200", text: "text-green-600",
+      btnPlus: "bg-green-100 active:bg-green-200 border-green-200",
+      btnMinus: "bg-green-50 active:bg-green-100 border-green-200",
+      btnTextPlus: "text-green-700", btnTextMinus: "text-green-400",
+    },
+  }[type];
+
+  const direction = useRef<"up" | "down" | null>(null);
+  const prevVal = useRef(value);
+
+  useEffect(() => {
+    if (value !== prevVal.current) {
+      direction.current = value > prevVal.current ? "up" : "down";
+      prevVal.current = value;
+    }
+  }, [value]);
+
+  // Long-press repeat
+  const repeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const handlePointerDown = (action: () => void) => {
+    action();
+    repeatTimer.current = setInterval(action, 180);
+  };
+  const handlePointerUp = () => {
+    if (repeatTimer.current) { clearInterval(repeatTimer.current); repeatTimer.current = null; }
+  };
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center text-sm">
-      <p className="font-bold text-gray-600 mb-1">ヒント</p>
-      <p className="text-gray-700">
-        {current} ＝
-        {h > 0 && <span className="text-red-500"> {h}百</span>}
-        <span className="text-blue-500"> {t}十</span>
-        <span className="text-green-600"> {o}一</span>
-      </p>
-      <p className="text-gray-600">{step > 0 ? `＋${step}` : `${step}`} すると…？</p>
+    <div className={`${colors.bg} ${colors.border} border-2 rounded-2xl flex flex-col items-center py-2 px-1 gap-1 relative overflow-hidden`}>
+      {/* Label */}
+      <span className={`text-sm font-bold ${colors.text}`}>{label}</span>
+
+      {/* Animated digit */}
+      <AnimatedDigit value={value} direction={direction.current} />
+
+      {/* Dots area */}
+      <div className="flex-1 flex items-start justify-center w-full">
+        <ColumnDots count={value} type={type} animating={dotAnim} />
+      </div>
+
+      {/* +/- buttons */}
+      <div className="flex gap-2 w-full px-1 mt-auto">
+        <button
+          onPointerDown={() => !disabled && handlePointerDown(onDecrement)}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          disabled={disabled}
+          className={`flex-1 py-2.5 rounded-xl border-2 ${colors.btnMinus} text-2xl font-black ${colors.btnTextMinus} transition-all active:scale-95 disabled:opacity-30 select-none touch-manipulation`}
+        >
+          −
+        </button>
+        <button
+          onPointerDown={() => !disabled && handlePointerDown(onIncrement)}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          disabled={disabled}
+          className={`flex-1 py-2.5 rounded-xl border-2 ${colors.btnPlus} text-2xl font-black ${colors.btnTextPlus} transition-all active:scale-95 disabled:opacity-30 select-none touch-manipulation`}
+        >
+          ＋
+        </button>
+      </div>
     </div>
   );
 }
 
-/* ─── Page ─── */
+/* ═══════════════════════════════════════════════
+   Page Component
+   ═══════════════════════════════════════════════ */
+
 export default function NumberLinePage() {
   const [mode, setMode] = useState<UserMode>("plus");
   const [problem, setProblem] = useState<Problem>(() => generateProblem(0, "plus", []));
-  const [userAnswer, setUserAnswer] = useState("");
   const [showReward, setShowReward] = useState(false);
   const [cleared, setCleared] = useState(false);
   const [message, setMessage] = useState("");
   const [streak, setStreak] = useState(0);
   const [difficulty, setDifficulty] = useState(0);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [showCarryVisual, setShowCarryVisual] = useState(false);
-  const [numbersOnLine, setNumbersOnLine] = useState<number[]>([]);
   const correctCount = useRef(0);
   const totalCount = useRef(0);
   const lastProblems = useRef<Problem[]>([]);
 
-  useEffect(() => {
-    const center = problem.current;
-    const absStep = Math.abs(problem.step);
-    const start = Math.max(0, center - 5 * absStep);
-    const end = center + 5 * absStep;
-    const nums: number[] = [];
-    for (let i = start; i <= end; i += absStep) nums.push(i);
-    setNumbersOnLine(nums);
-  }, [problem]);
+  // Place value input state
+  const [inputH, setInputH] = useState(0);
+  const [inputT, setInputT] = useState(0);
+  const [inputO, setInputO] = useState(0);
+  const [carryAnim, setCarryAnim] = useState<CarryAnimInfo>(null);
+  const [dotAnimH, setDotAnimH] = useState<"gather" | "scatter" | null>(null);
+  const [dotAnimT, setDotAnimT] = useState<"gather" | "scatter" | null>(null);
+  const [dotAnimO, setDotAnimO] = useState<"gather" | "scatter" | null>(null);
+  const animLock = useRef(false);
 
-  const switchMode = (newMode: UserMode) => {
-    setMode(newMode);
-    setProblem(generateProblem(difficulty, newMode, lastProblems.current));
-    setUserAnswer("");
-    setCleared(false);
-    setShowCorrectAnswer(false);
-    setShowHint(false);
-    setShowCarryVisual(false);
-    setMessage("");
-  };
+  const composedAnswer = inputH * 100 + inputT * 10 + inputO;
 
+  /* ─── Carry/Borrow Animation Sequence ─── */
+  const runCarryAnimation = useCallback((from: PlaceType, to: PlaceType, type: "carry" | "borrow") => {
+    animLock.current = true;
+    playBundle();
+
+    // Phase 0: Announce
+    setCarryAnim({ type, from, to, phase: 0 });
+
+    setTimeout(() => {
+      // Phase 1: Transfer visual
+      setCarryAnim({ type, from, to, phase: 1 });
+
+      if (type === "carry") {
+        // Dots gather in source column
+        if (from === "ones") setDotAnimO("gather");
+        else setDotAnimT("gather");
+      } else {
+        // Dots scatter from source
+        if (to === "ones") setDotAnimT("gather");
+        else setDotAnimH("gather");
+      }
+
+      setTimeout(() => {
+        // Phase 2: Update digits
+        if (type === "carry") {
+          if (from === "ones") {
+            setInputO(0);
+            setDotAnimO(null);
+            // Check cascade: tens might also carry
+            setInputT(prev => {
+              if (prev === 9) {
+                // Cascade carry tens→hundreds
+                setTimeout(() => {
+                  setInputT(0);
+                  setInputH(ph => Math.min(9, ph + 1));
+                  setDotAnimH("scatter");
+                  setTimeout(() => setDotAnimH(null), 400);
+                }, 100);
+                return prev; // will be reset by the timeout
+              }
+              return prev + 1;
+            });
+            setDotAnimT("scatter");
+            setTimeout(() => setDotAnimT(null), 400);
+          } else {
+            // tens → hundreds
+            setInputT(0);
+            setInputH(prev => Math.min(9, prev + 1));
+            setDotAnimT(null);
+            setDotAnimH("scatter");
+            setTimeout(() => setDotAnimH(null), 400);
+          }
+        } else {
+          // Borrow
+          if (from === "tens") {
+            // tens→ones
+            setInputT(prev => {
+              if (prev === 0) {
+                // Cascade borrow from hundreds
+                setTimeout(() => {
+                  setInputH(ph => Math.max(0, ph - 1));
+                  setInputT(9);
+                  setDotAnimT("scatter");
+                  setTimeout(() => setDotAnimT(null), 400);
+                }, 100);
+                return prev; // will be reset by the timeout
+              }
+              return prev - 1;
+            });
+            setDotAnimT(null);
+            setInputO(9);
+            setDotAnimO("scatter");
+            setTimeout(() => setDotAnimO(null), 400);
+          } else {
+            // hundreds→tens
+            setInputH(prev => Math.max(0, prev - 1));
+            setDotAnimH(null);
+            setInputT(9);
+            setDotAnimT("scatter");
+            setTimeout(() => setDotAnimT(null), 400);
+          }
+        }
+
+        setCarryAnim(null);
+        setTimeout(() => { animLock.current = false; }, 200);
+      }, 600);
+    }, 500);
+  }, []);
+
+  /* ─── Increment/Decrement handlers ─── */
+  const handleIncrement = useCallback((place: PlaceType) => {
+    if (animLock.current || cleared || showCorrectAnswer) return;
+    playPop();
+
+    if (place === "ones") {
+      if (inputO < 9) {
+        setInputO(prev => prev + 1);
+        setDotAnimO("scatter");
+        setTimeout(() => setDotAnimO(null), 300);
+      } else {
+        // Carry: ones 9 → 0, tens + 1
+        runCarryAnimation("ones", "tens", "carry");
+      }
+    } else if (place === "tens") {
+      if (inputT < 9) {
+        setInputT(prev => prev + 1);
+        setDotAnimT("scatter");
+        setTimeout(() => setDotAnimT(null), 300);
+      } else {
+        // Carry: tens 9 → 0, hundreds + 1
+        runCarryAnimation("tens", "hundreds", "carry");
+      }
+    } else {
+      if (inputH < 9) {
+        setInputH(prev => prev + 1);
+        setDotAnimH("scatter");
+        setTimeout(() => setDotAnimH(null), 300);
+      }
+    }
+  }, [inputO, inputT, inputH, cleared, showCorrectAnswer, runCarryAnimation]);
+
+  const handleDecrement = useCallback((place: PlaceType) => {
+    if (animLock.current || cleared || showCorrectAnswer) return;
+    playPop();
+
+    if (place === "ones") {
+      if (inputO > 0) {
+        setInputO(prev => prev - 1);
+      } else if (inputT > 0 || inputH > 0) {
+        // Borrow: ones 0 → 9, tens - 1
+        runCarryAnimation("tens", "ones", "borrow");
+      }
+    } else if (place === "tens") {
+      if (inputT > 0) {
+        setInputT(prev => prev - 1);
+      } else if (inputH > 0) {
+        // Borrow: tens 0 → 9, hundreds - 1
+        runCarryAnimation("hundreds", "tens", "borrow");
+      }
+    } else {
+      if (inputH > 0) {
+        setInputH(prev => prev - 1);
+      }
+    }
+  }, [inputO, inputT, inputH, cleared, showCorrectAnswer, runCarryAnimation]);
+
+  /* ─── Submit answer ─── */
   const handleSubmit = useCallback(() => {
-    const parsed = parseInt(userAnswer, 10);
-    if (isNaN(parsed)) return;
+    if (animLock.current) return;
     totalCount.current += 1;
 
-    if (parsed === problem.answer) {
+    if (composedAnswer === problem.answer) {
       correctCount.current += 1;
-      setStreak((s) => s + 1);
+      setStreak(s => s + 1);
       setCleared(true);
       const ct = getCarryType(problem);
       if (isCarryOrBorrow(ct)) { playBundle(); } else { playSuccess(); }
       setMessage(getSuccessMessage(problem));
-      // Show carry visual on correct carry/borrow answers too (reinforcement)
-      if (isCarryOrBorrow(ct)) setShowCarryVisual(true);
       setTimeout(() => setShowReward(true), 800);
-      setDifficulty((d) => Math.min(10, d + 1));
+      setDifficulty(d => Math.min(10, d + 1));
     } else {
       playError();
       setStreak(0);
       setShowCorrectAnswer(true);
-      setShowCarryVisual(true);
       setMessage(getWrongMessage(problem));
-      setDifficulty((d) => Math.max(0, d - 1));
+      setDifficulty(d => Math.max(0, d - 1));
     }
-  }, [userAnswer, problem]);
+  }, [composedAnswer, problem]);
 
+  /* ─── Next problem ─── */
   const nextProblem = () => {
     lastProblems.current = [...lastProblems.current.slice(-4), problem];
     setProblem(generateProblem(difficulty, mode, lastProblems.current));
-    setUserAnswer("");
+    setInputH(0);
+    setInputT(0);
+    setInputO(0);
     setCleared(false);
     setShowCorrectAnswer(false);
-    setShowHint(false);
-    setShowCarryVisual(false);
     setMessage("");
+    setCarryAnim(null);
+    setDotAnimH(null);
+    setDotAnimT(null);
+    setDotAnimO(null);
   };
 
-  const handleNumberPad = (val: string) => {
-    if (cleared || showCorrectAnswer) return;
-    if (val === "del") { setUserAnswer((prev) => prev.slice(0, -1)); }
-    else if (val === "ok") { if (userAnswer.length > 0) handleSubmit(); }
-    else { if (userAnswer.length < 3) setUserAnswer((prev) => prev + val); }
-    playPop();
+  const switchMode = (newMode: UserMode) => {
+    setMode(newMode);
+    setProblem(generateProblem(difficulty, newMode, lastProblems.current));
+    setInputH(0);
+    setInputT(0);
+    setInputO(0);
+    setCleared(false);
+    setShowCorrectAnswer(false);
+    setMessage("");
+    setCarryAnim(null);
   };
 
   const levelName = difficulty <= 1 ? "きほん" : difficulty <= 4 ? "ふつう" : difficulty <= 7 ? "むずかしい" : "マスター";
   const pct = totalCount.current > 0 ? Math.round((correctCount.current / totalCount.current) * 100) : 0;
   const ct = getCarryType(problem);
+
+  // Show answer decomposition when wrong
+  const ansH = Math.floor(problem.answer / 100);
+  const ansT = Math.floor((problem.answer % 100) / 10);
+  const ansO = problem.answer % 10;
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
@@ -480,7 +658,7 @@ export default function NumberLinePage() {
         </div>
 
         {/* ─── Big stats bar ─── */}
-        <div className="bg-white/90 border border-purple-200 rounded-2xl p-3 mb-3 shadow-sm">
+        <div className="bg-white/90 border border-purple-200 rounded-2xl p-3 mb-2 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{difficulty <= 1 ? "⭐" : difficulty <= 4 ? "⭐⭐" : difficulty <= 7 ? "⭐⭐⭐" : "👑"}</span>
@@ -494,7 +672,6 @@ export default function NumberLinePage() {
               <p className="text-gray-400 text-[10px]">れんぞく</p>
             </div>
           </div>
-          {/* progress bar */}
           <div className="flex items-center gap-2">
             <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
               <div
@@ -525,110 +702,204 @@ export default function NumberLinePage() {
           ))}
         </div>
 
-        {/* Number line */}
-        <div className="bg-white/80 border border-gray-200 shadow-sm rounded-xl p-3 mb-2 overflow-x-auto">
-          <div className="flex items-end justify-center gap-0 min-w-max mx-auto">
-            {numbersOnLine.map((num, i) => {
-              const isCurrent = num === problem.current;
-              const isAnswer = num === problem.answer && (cleared || showCorrectAnswer);
-              const isNextUnknown = num === problem.answer && !cleared && !showCorrectAnswer;
-              return (
-                <div key={`${num}-${i}`} className="flex flex-col items-center" style={{ minWidth: 38 }}>
-                  {isCurrent && <div className="text-xl mb-1 animate-bounce">🧱</div>}
-                  {isAnswer && <div className="text-xl mb-1">⭐</div>}
-                  {isNextUnknown && <div className="text-xl mb-1 text-yellow-300 animate-pulse">❓</div>}
-                  <span className={`text-xs font-bold mb-1 ${
-                    isCurrent ? "text-purple-600 text-sm" : isAnswer ? "text-green-500 text-sm" : isNextUnknown ? "text-orange-500" : "text-gray-400"
-                  }`}>
-                    {isNextUnknown ? "？" : num}
-                  </span>
-                  <div className={`w-0.5 ${isCurrent || isAnswer ? "h-5 bg-yellow-400" : "h-3 bg-gray-300"}`} />
-                </div>
-              );
-            })}
-          </div>
-          <div className="h-0.5 bg-gray-300 -mt-0.5 mx-4" />
-        </div>
-
         {/* Question */}
         <div className="text-center mb-2">
           <span className="text-purple-700 text-3xl font-bold">{problem.current}</span>
           <span className="text-gray-500 mx-2 text-base">の {stepLabel(problem.step)} は？</span>
         </div>
 
-        {/* Answer display */}
+        {/* Composed answer display */}
         <div className="text-center mb-2">
-          <div className="inline-block bg-white border-2 border-gray-300 shadow-sm rounded-xl px-6 py-2 min-w-[140px]">
-            <span className={`text-3xl font-bold ${userAnswer ? "text-gray-800" : "text-gray-300"}`}>
-              {userAnswer || "???"}
+          <div className={`inline-block rounded-xl px-5 py-1.5 border-2 transition-all ${
+            cleared ? "bg-green-50 border-green-400" :
+            showCorrectAnswer ? "bg-red-50 border-red-300" :
+            "bg-white/80 border-gray-200"
+          }`}>
+            <span className={`text-3xl font-black tabular-nums ${
+              cleared ? "text-green-600" :
+              showCorrectAnswer ? "text-red-500" :
+              composedAnswer > 0 ? "text-gray-800" : "text-gray-300"
+            }`}>
+              {composedAnswer > 0 || cleared || showCorrectAnswer ? composedAnswer : "？？？"}
             </span>
           </div>
         </div>
 
-        {/* Hint button (before answering) */}
-        {!cleared && !showCorrectAnswer && !showHint && isCarryOrBorrow(ct) && (
-          <div className="text-center mb-2">
-            <button
-              onClick={() => { setShowHint(true); playPop(); }}
-              className="text-purple-400 text-xs underline hover:text-purple-600"
-            >
-              💡 ヒントをみる
-            </button>
-          </div>
-        )}
-
-        {/* Hint display */}
-        {showHint && !cleared && !showCorrectAnswer && (
-          <div className="mb-2">
-            <HintDecomposition problem={problem} />
-          </div>
-        )}
-
-        {/* Message */}
-        {message && (
-          <div className={`rounded-lg p-2 mb-2 text-center ${
-            cleared ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-          }`}>
-            <p className="text-gray-700 text-sm whitespace-pre-line">{message}</p>
-          </div>
-        )}
-
-        {/* Carry visual (on wrong answer or correct carry answer) */}
-        {showCarryVisual && isCarryOrBorrow(ct) && (
-          <div className="mb-2 animate-slide-up">
-            <CarryVisual problem={problem} />
-          </div>
-        )}
-
-        {/* Number pad / Next */}
-        <div className="flex-1 flex flex-col justify-end">
+        {/* ═══ Place Value Columns ═══ */}
+        <div className="relative flex-1 flex flex-col">
           {!cleared && !showCorrectAnswer ? (
-            <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
-              {["1","2","3","4","5","6","7","8","9","del","0","ok"].map((val) => (
-                <button
-                  key={val}
-                  onClick={() => handleNumberPad(val)}
-                  className={`py-3 rounded-xl text-xl font-bold transition-all active:scale-95 ${
-                    val === "ok" ? "bg-green-500 hover:bg-green-600 text-white text-base"
-                    : val === "del" ? "bg-red-100 hover:bg-red-200 text-red-700 text-sm"
-                    : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-sm"
-                  }`}
-                >
-                  {val === "del" ? "けす" : val === "ok" ? "こたえあわせ ✓" : val}
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-2 flex-1 relative">
+              <PlaceValueColumn
+                label="百のくらい"
+                value={inputH}
+                onIncrement={() => handleIncrement("hundreds")}
+                onDecrement={() => handleDecrement("hundreds")}
+                type="hundreds"
+                disabled={animLock.current}
+                dotAnim={dotAnimH}
+              />
+              <PlaceValueColumn
+                label="十のくらい"
+                value={inputT}
+                onIncrement={() => handleIncrement("tens")}
+                onDecrement={() => handleDecrement("tens")}
+                type="tens"
+                disabled={animLock.current}
+                dotAnim={dotAnimT}
+              />
+              <PlaceValueColumn
+                label="一のくらい"
+                value={inputO}
+                onIncrement={() => handleIncrement("ones")}
+                onDecrement={() => handleDecrement("ones")}
+                type="ones"
+                disabled={animLock.current}
+                dotAnim={dotAnimO}
+              />
+
+              {/* Carry/Borrow overlay */}
+              <CarryOverlay anim={carryAnim} />
             </div>
           ) : (
-            <div className="text-center animate-slide-up">
-              <button onClick={nextProblem} className="mc-btn text-lg px-8 py-3">
-                つぎのもんだい →
-              </button>
+            /* ─── Result display ─── */
+            <div className="flex flex-col gap-2 flex-1">
+              {/* Message */}
+              {message && (
+                <div className={`rounded-xl p-3 text-center ${
+                  cleared ? "bg-green-50 border-2 border-green-200" : "bg-red-50 border-2 border-red-200"
+                }`}>
+                  <p className="text-gray-700 text-sm whitespace-pre-line font-bold">{message}</p>
+                </div>
+              )}
+
+              {/* Show correct answer decomposition on wrong answer */}
+              {showCorrectAnswer && (
+                <div className="grid grid-cols-3 gap-2 animate-slide-up">
+                  <div className="bg-red-50/60 border border-red-200 rounded-xl p-2 text-center">
+                    <p className="text-red-500 text-xs font-bold">百のくらい</p>
+                    <p className="text-2xl font-black text-red-600">{ansH}</p>
+                  </div>
+                  <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-2 text-center">
+                    <p className="text-blue-500 text-xs font-bold">十のくらい</p>
+                    <p className="text-2xl font-black text-blue-600">{ansT}</p>
+                  </div>
+                  <div className="bg-green-50/60 border border-green-200 rounded-xl p-2 text-center">
+                    <p className="text-green-500 text-xs font-bold">一のくらい</p>
+                    <p className="text-2xl font-black text-green-600">{ansO}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Carry/borrow explanation for carry/borrow problems */}
+              {isCarryOrBorrow(ct) && (
+                <div className={`rounded-xl p-3 text-center animate-slide-up ${
+                  cleared ? "bg-yellow-50 border-2 border-yellow-300" : "bg-purple-50 border-2 border-purple-300"
+                }`}>
+                  <CarryExplanation problem={problem} />
+                </div>
+              )}
+
+              {/* Next button */}
+              <div className="text-center mt-auto pt-2">
+                <button onClick={nextProblem} className="mc-btn text-lg px-8 py-3">
+                  つぎのもんだい →
+                </button>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Submit button (when not yet answered) */}
+        {!cleared && !showCorrectAnswer && (
+          <div className="text-center py-2">
+            <button
+              onClick={handleSubmit}
+              disabled={composedAnswer === 0 || animLock.current}
+              className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-bold text-lg px-8 py-3 rounded-xl shadow-md transition-all active:scale-95 disabled:active:scale-100"
+            >
+              こたえあわせ ✓
+            </button>
+          </div>
+        )}
       </div>
 
       <RewardModal show={showReward} onClose={() => setShowReward(false)} />
     </div>
+  );
+}
+
+/* ─── Carry/Borrow explanation (shown after answering) ─── */
+function CarryExplanation({ problem }: { problem: Problem }) {
+  const { current, step, answer } = problem;
+  const ct = getCarryType(problem);
+
+  if (ct === "carry_tens" || ct === "carry_hundreds") {
+    const ones = current % 10;
+    return (
+      <>
+        <p className="text-sm font-bold text-yellow-700 mb-1">くりあがりの しくみ</p>
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <span className="text-green-600 font-bold">一のくらい {ones}＋1＝10</span>
+          <span className="text-yellow-600">→</span>
+          <span className="text-blue-600 font-bold">十のくらい＋1</span>
+        </div>
+        <div className="flex items-center justify-center gap-1 mt-1">
+          <div className="flex gap-0.5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className={`rounded-full border ${i < ones ? "bg-green-400 border-green-500" : "bg-yellow-400 border-yellow-500"}`} style={{ width: 10, height: 10 }} />
+            ))}
+          </div>
+          <span className="mx-1">→</span>
+          <div className="inline-flex flex-col p-0.5 rounded bg-blue-100 border-2 border-blue-400" style={{ gap: 1 }}>
+            {[0, 1].map(row => (
+              <div key={row} className="flex" style={{ gap: 1 }}>
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 8, height: 8 }} />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (ct === "borrow_tens" || ct === "borrow_hundreds") {
+    return (
+      <>
+        <p className="text-sm font-bold text-purple-700 mb-1">くりさがりの しくみ</p>
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <span className="text-green-600 font-bold">一のくらい 0−1 → たりない!</span>
+        </div>
+        <div className="flex items-center justify-center gap-1 mt-1">
+          <div className="inline-flex flex-col p-0.5 rounded bg-blue-100 border-2 border-blue-400" style={{ gap: 1 }}>
+            {[0, 1].map(row => (
+              <div key={row} className="flex" style={{ gap: 1 }}>
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 8, height: 8 }} />
+                ))}
+              </div>
+            ))}
+          </div>
+          <span className="mx-1">→</span>
+          <div className="flex gap-0.5 flex-wrap" style={{ maxWidth: 70 }}>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="rounded-full bg-green-400 border border-green-500" style={{ width: 10, height: 10 }} />
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-gray-600 mt-1">十のたば→10こにバラして、1こひく→<span className="font-bold text-green-600">9こ</span></p>
+      </>
+    );
+  }
+
+  // Generic carry/borrow for +10/-10 cases
+  return (
+    <>
+      <p className="text-sm font-bold text-orange-700 mb-1">くらいが かわったよ</p>
+      <p className="text-sm text-gray-700">
+        {current} {step > 0 ? `＋${step}` : `${step}`} ＝ <span className="font-bold">{answer}</span>
+      </p>
+    </>
   );
 }
