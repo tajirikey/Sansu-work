@@ -246,21 +246,17 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
     );
   }
 
-  // hundreds: 5×2 blocks of red, each containing 10×10 concept (shown as larger block)
+  // hundreds: simple solid red squares (1 block = 100)
   return (
-    <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
+    <div className="flex flex-wrap gap-1.5 justify-center items-start min-h-[52px] px-1 content-start">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`inline-grid grid-cols-5 p-0.5 rounded bg-red-50 border border-red-300 ${
+          className={`rounded bg-red-400 border border-red-500 shadow-sm ${
             animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
           } ${animating === "gather" ? "animate-gather-dots" : ""}`}
-          style={{ gap: 1 }}
-        >
-          {Array.from({ length: 10 }).map((_, j) => (
-            <div key={j} className="rounded-full bg-red-400" style={{ width: 5, height: 5 }} />
-          ))}
-        </div>
+          style={{ width: 22, height: 22 }}
+        />
       ))}
     </div>
   );
