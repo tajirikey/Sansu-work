@@ -209,12 +209,18 @@ function TenBundle({ size = 6, className = "" }: { size?: number; className?: st
   );
 }
 
-/* ─── Dot visualization within a column (5 per row everywhere) ─── */
-function ColumnDots({ count, type, animating }: { count: number; type: PlaceType; animating?: "gather" | "scatter" | null }) {
+/* ─── Dot visualization within a column (5 per row) ─── */
+type DotAnim = "gather" | "scatter" | "hidden" | null;
+
+function ColumnDots({ count, type, animating }: { count: number; type: PlaceType; animating?: DotAnim }) {
+  // Hidden = dots are flying in the overlay, don't show here
+  if (animating === "hidden") {
+    return <div className="min-h-[52px]" />;
+  }
+
   const DOT = 10;
 
   if (type === "ones") {
-    // Individual green dots, 5 per row
     return (
       <div className="grid grid-cols-5 gap-1 justify-items-center min-h-[52px] px-1 content-start">
         {Array.from({ length: count }).map((_, i) => (
@@ -231,7 +237,6 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
   }
 
   if (type === "tens") {
-    // Each ten = a 5×2 bundle of green dots
     return (
       <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
         {Array.from({ length: count }).map((_, i) => (
@@ -246,79 +251,94 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
     );
   }
 
-  // hundreds: simple solid red squares (1 block = 100)
+  // hundreds: 10×10 grid of tiny red dots (100 per block)
   return (
-    <div className="flex flex-wrap gap-1.5 justify-center items-start min-h-[52px] px-1 content-start">
+    <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`rounded bg-red-400 border border-red-500 shadow-sm ${
+          className={`inline-grid grid-cols-10 p-0.5 rounded bg-red-50 border border-red-300 ${
             animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
           } ${animating === "gather" ? "animate-gather-dots" : ""}`}
-          style={{ width: 22, height: 22 }}
-        />
+          style={{ gap: 0.5 }}
+        >
+          {Array.from({ length: 100 }).map((_, j) => (
+            <div key={j} className="rounded-full bg-red-400" style={{ width: 2, height: 2 }} />
+          ))}
+        </div>
       ))}
     </div>
   );
 }
 
-/* ─── Carry/Borrow animation overlay: dots flying between columns ─── */
+/* ─── Carry/Borrow: dots flying between columns ─── */
 type CarryAnimInfo = {
   type: "carry" | "borrow";
   from: PlaceType;
   to: PlaceType;
-  phase: number; // 0=gather in source, 1=fly between columns, 2=land in dest
+  phase: number; // 0=show 10th dot, 1=fly, 2=land
 } | null;
 
-function FlyingDotsOverlay({ anim }: { anim: CarryAnimInfo }) {
-  if (!anim || anim.phase !== 1) return null;
+function FlyingDotsOverlay({ anim, onesCount }: { anim: CarryAnimInfo; onesCount: number }) {
+  if (!anim) return null;
 
   const isCarry = anim.type === "carry";
-  // Column centers: hundreds=16.7%, tens=50%, ones=83.3%
   const colCenter = { hundreds: 16.7, tens: 50, ones: 83.3 };
+  const startX = colCenter[anim.from];
+  const endX = colCenter[anim.to];
 
-  let startX: number, endX: number;
-  if (isCarry) {
-    // Carry: dots fly from source to higher place (right→left)
-    startX = colCenter[anim.from];
-    endX = colCenter[anim.to];
-  } else {
-    // Borrow: bundle flies from higher place to lower (left→right)
-    startX = colCenter[anim.from];
-    endX = colCenter[anim.to];
-  }
-
-  const dx = endX - startX;
-
-  return (
-    <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
-      <div
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-none"
-        style={{
-          left: `${startX}%`,
-          animation: `fly-dots 0.5s ease-in-out forwards`,
-        }}
-      >
-        {/* Flying bundle: 5×2 green dots in a highlighted container */}
-        <div className={`inline-grid grid-cols-5 p-1 rounded-lg shadow-lg border-2 ${
-          isCarry ? "bg-yellow-100 border-yellow-400" : "bg-purple-100 border-purple-400"
-        }`} style={{ gap: 2 }}>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="rounded-full bg-green-500" style={{ width: 8, height: 8 }} />
-          ))}
+  // Phase 0: show 10 dots briefly at the source position (ones column)
+  if (anim.phase === 0 && isCarry && anim.from === "ones") {
+    return (
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        <div className="absolute" style={{ left: `${colCenter.ones}%`, top: "38%", transform: "translate(-50%, 0)" }}>
+          <div className="grid grid-cols-5 gap-1 justify-items-center px-1">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className={`rounded-full shadow-sm ${i === 9 ? "bg-yellow-400 animate-pop-in" : "bg-green-500"}`}
+                style={{ width: 10, height: 10 }}
+              />
+            ))}
+          </div>
         </div>
       </div>
-      {/* Inline keyframe for dynamic translateX */}
-      <style>{`
-        @keyframes fly-dots {
-          0% { left: ${startX}%; transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
-          70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-          100% { left: ${endX}%; transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
-        }
-      `}</style>
-    </div>
-  );
+    );
+  }
+
+  // Phase 1: dots fly between columns
+  if (anim.phase === 1) {
+    // Use a unique animation name to avoid conflicts on re-render
+    const animName = `fly-${isCarry ? "c" : "b"}-${Date.now() % 10000}`;
+    return (
+      <div className="absolute inset-0 z-20 pointer-events-none overflow-visible">
+        <div
+          className="absolute -translate-x-1/2"
+          style={{
+            left: `${startX}%`,
+            top: "36%",
+            animation: `${animName} 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
+          }}
+        >
+          {/* The flying dots: 5×2 grid that looks like the ones-column dots compacting into a bundle */}
+          <div className="inline-grid grid-cols-5 p-1 rounded-lg bg-yellow-50/90 border-2 border-yellow-300 shadow-xl" style={{ gap: 2 }}>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="rounded-full bg-green-500" style={{ width: 8, height: 8 }} />
+            ))}
+          </div>
+        </div>
+        <style>{`
+          @keyframes ${animName} {
+            0%   { left: ${startX}%; transform: translateX(-50%) scale(1); opacity: 1; }
+            40%  { transform: translateX(-50%) scale(1.15); opacity: 1; }
+            100% { left: ${endX}%; transform: translateX(-50%) scale(0.85); opacity: 0.9; }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /* ─── Single Place Value Column ─── */
@@ -331,7 +351,7 @@ function PlaceValueColumn({
   onDecrement: () => void;
   type: PlaceType;
   disabled: boolean;
-  dotAnim?: "gather" | "scatter" | null;
+  dotAnim?: DotAnim;
   animDir: "up" | "down" | null;
 }) {
   const colors = {
@@ -425,9 +445,9 @@ export default function NumberLinePage() {
   const [inputT, setInputT] = useState(0);
   const [inputO, setInputO] = useState(0);
   const [carryAnim, setCarryAnim] = useState<CarryAnimInfo>(null);
-  const [dotAnimH, setDotAnimH] = useState<"gather" | "scatter" | null>(null);
-  const [dotAnimT, setDotAnimT] = useState<"gather" | "scatter" | null>(null);
-  const [dotAnimO, setDotAnimO] = useState<"gather" | "scatter" | null>(null);
+  const [dotAnimH, setDotAnimH] = useState<DotAnim>(null);
+  const [dotAnimT, setDotAnimT] = useState<DotAnim>(null);
+  const [dotAnimO, setDotAnimO] = useState<DotAnim>(null);
   // Explicit animation direction: "up" for +, "down" for -
   const [dirH, setDirH] = useState<"up" | "down" | null>(null);
   const [dirT, setDirT] = useState<"up" | "down" | null>(null);
@@ -436,45 +456,32 @@ export default function NumberLinePage() {
 
   const composedAnswer = inputH * 100 + inputT * 10 + inputO;
 
-  /* ─── Carry/Borrow Animation Sequence (no text, dots only) ─── */
+  /* ─── Carry/Borrow Animation: dots fly between columns ─── */
   const runCarryAnimation = useCallback((from: PlaceType, to: PlaceType, type: "carry" | "borrow") => {
     animLock.current = true;
     playBundle();
 
-    // Phase 0: Gather dots in source column (200ms)
-    setCarryAnim({ type, from, to, phase: 0 });
     if (type === "carry") {
-      if (from === "ones") setDotAnimO("gather");
-      else setDotAnimT("gather");
-    } else {
-      if (from === "tens") setDotAnimT("gather");
-      else setDotAnimH("gather");
-    }
+      // ── CARRY: source dots gather → fly → land as bundle in dest ──
 
-    setTimeout(() => {
-      // Phase 1: Flying dots between columns (500ms)
-      setCarryAnim({ type, from, to, phase: 1 });
-      // Clear source gather
-      if (type === "carry") {
-        if (from === "ones") setDotAnimO(null);
-        else setDotAnimT(null);
-      } else {
-        if (from === "tens") setDotAnimT(null);
-        else setDotAnimH(null);
-      }
+      // Phase 0 (250ms): Briefly show 10 dots at source (the 10th appears)
+      setCarryAnim({ type, from, to, phase: 0 });
 
       setTimeout(() => {
-        // Phase 2: Update digits, show dots in destination
-        if (type === "carry") {
+        // Phase 1 (500ms): Hide source dots, fly overlay from source to dest
+        if (from === "ones") { setDotAnimO("hidden"); setInputO(0); }
+        else { setDotAnimT("hidden"); setInputT(0); }
+        setCarryAnim({ type, from, to, phase: 1 });
+
+        // Roll digits midway through flight
+        setTimeout(() => {
           if (from === "ones") {
             setDirO("up");
             setDirT("up");
-            setInputO(0);
             setInputT(prev => {
               if (prev === 9) {
                 setTimeout(() => {
-                  setDirT("up");
-                  setDirH("up");
+                  setDirT("up"); setDirH("up");
                   setInputT(0);
                   setInputH(ph => Math.min(9, ph + 1));
                   setDotAnimH("scatter");
@@ -484,51 +491,89 @@ export default function NumberLinePage() {
               }
               return prev + 1;
             });
+          } else {
+            setDirT("up"); setDirH("up");
+            setInputH(prev => Math.min(9, prev + 1));
+          }
+        }, 250);
+
+        // Phase 2: Land - show new bundle in dest
+        setTimeout(() => {
+          setCarryAnim(null);
+          if (from === "ones") {
+            setDotAnimO(null);
             setDotAnimT("scatter");
             setTimeout(() => setDotAnimT(null), 300);
           } else {
-            setDirT("up");
-            setDirH("up");
-            setInputT(0);
-            setInputH(prev => Math.min(9, prev + 1));
+            setDotAnimT(null);
             setDotAnimH("scatter");
             setTimeout(() => setDotAnimH(null), 300);
           }
+          setTimeout(() => { animLock.current = false; }, 150);
+        }, 500);
+      }, 250);
+
+    } else {
+      // ── BORROW: bundle in source → fly → scatter as dots in dest ──
+
+      // Phase 0 (200ms): Highlight/gather the source bundle
+      setCarryAnim({ type, from, to, phase: 0 });
+      if (from === "tens") setDotAnimT("gather");
+      else setDotAnimH("gather");
+
+      setTimeout(() => {
+        // Phase 1 (500ms): Hide source bundle, fly overlay to dest
+        if (from === "tens") {
+          setDotAnimT("hidden");
+          setDirT("down");
+          setInputT(prev => {
+            if (prev === 0) {
+              setTimeout(() => {
+                setDirH("down"); setDirT("down");
+                setInputH(ph => Math.max(0, ph - 1));
+                setInputT(9);
+                setDotAnimT("scatter");
+                setTimeout(() => setDotAnimT(null), 300);
+              }, 80);
+              return prev;
+            }
+            return prev - 1;
+          });
         } else {
-          if (from === "tens") {
-            setDirT("down");
+          setDotAnimH("hidden");
+          setDirH("down"); setDirT("down");
+          setInputH(prev => Math.max(0, prev - 1));
+          setInputT(9);
+        }
+        setCarryAnim({ type, from, to, phase: 1 });
+
+        // Roll dest digit midway
+        setTimeout(() => {
+          if (to === "ones") {
             setDirO("down");
-            setInputT(prev => {
-              if (prev === 0) {
-                setTimeout(() => {
-                  setDirH("down");
-                  setDirT("down");
-                  setInputH(ph => Math.max(0, ph - 1));
-                  setInputT(9);
-                  setDotAnimT("scatter");
-                  setTimeout(() => setDotAnimT(null), 300);
-                }, 80);
-                return prev;
-              }
-              return prev - 1;
-            });
             setInputO(9);
+          } else {
+            setDirT("down");
+            setInputT(9);
+          }
+        }, 250);
+
+        // Phase 2: Land - show dots in dest
+        setTimeout(() => {
+          setCarryAnim(null);
+          if (from === "tens") {
+            setDotAnimT(null);
             setDotAnimO("scatter");
             setTimeout(() => setDotAnimO(null), 300);
           } else {
-            setDirH("down");
-            setDirT("down");
-            setInputH(prev => Math.max(0, prev - 1));
-            setInputT(9);
+            setDotAnimH(null);
             setDotAnimT("scatter");
             setTimeout(() => setDotAnimT(null), 300);
           }
-        }
-
-        setCarryAnim(null);
-        setTimeout(() => { animLock.current = false; }, 150);
-      }, 500);
-    }, 250);
+          setTimeout(() => { animLock.current = false; }, 150);
+        }, 500);
+      }, 200);
+    }
   }, []);
 
   /* ─── Increment/Decrement handlers ─── */
@@ -763,7 +808,7 @@ export default function NumberLinePage() {
               />
 
               {/* Flying dots overlay */}
-              <FlyingDotsOverlay anim={carryAnim} />
+              <FlyingDotsOverlay anim={carryAnim} onesCount={inputO} />
             </div>
           ) : (
             /* ─── Result display ─── */
