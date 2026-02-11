@@ -198,20 +198,32 @@ function AnimatedDigit({ value, animDir }: { value: number; animDir: "up" | "dow
   );
 }
 
-/* ─── Dot visualization within a column ─── */
+/* ─── Reusable 5×2 ten-bundle (10 dots) ─── */
+function TenBundle({ size = 6, className = "" }: { size?: number; className?: string }) {
+  return (
+    <div className={`inline-grid grid-cols-5 p-0.5 rounded bg-blue-50 border border-blue-300 ${className}`} style={{ gap: 1 }}>
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="rounded-full bg-green-500" style={{ width: size, height: size }} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Dot visualization within a column (5 per row everywhere) ─── */
 function ColumnDots({ count, type, animating }: { count: number; type: PlaceType; animating?: "gather" | "scatter" | null }) {
-  const DOT = 8;
+  const DOT = 10;
 
   if (type === "ones") {
+    // Individual green dots, 5 per row
     return (
-      <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+      <div className="grid grid-cols-5 gap-1 justify-items-center min-h-[52px] px-1 content-start">
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
             className={`rounded-full bg-green-500 shadow-sm ${
               animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
             } ${animating === "gather" ? "animate-gather-dots" : ""}`}
-            style={{ width: DOT + 4, height: DOT + 4 }}
+            style={{ width: DOT, height: DOT }}
           />
         ))}
       </div>
@@ -219,49 +231,34 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
   }
 
   if (type === "tens") {
+    // Each ten = a 5×2 bundle of green dots
     return (
-      <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+      <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
         {Array.from({ length: count }).map((_, i) => (
-          <div
+          <TenBundle
             key={i}
-            className={`inline-flex flex-col p-0.5 rounded bg-blue-50 border border-blue-300 ${
+            className={`${
               animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
             } ${animating === "gather" ? "animate-gather-dots" : ""}`}
-            style={{ gap: 1 }}
-          >
-            {[0, 1].map(row => (
-              <div key={row} className="flex" style={{ gap: 1 }}>
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-green-500" style={{ width: DOT - 2, height: DOT - 2 }} />
-                ))}
-              </div>
-            ))}
-          </div>
+          />
         ))}
       </div>
     );
   }
 
-  // hundreds
+  // hundreds: 5×2 blocks of red, each containing 10×10 concept (shown as larger block)
   return (
-    <div className="flex flex-wrap gap-1 justify-center items-center min-h-[52px] px-1">
+    <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`inline-flex flex-col p-0.5 rounded bg-red-50 border border-red-300 ${
+          className={`inline-grid grid-cols-5 p-0.5 rounded bg-red-50 border border-red-300 ${
             animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
           } ${animating === "gather" ? "animate-gather-dots" : ""}`}
           style={{ gap: 1 }}
         >
-          {[0, 1].map(row => (
-            <div key={row} className="flex" style={{ gap: 1 }}>
-              {Array.from({ length: 5 }).map((_, j) => (
-                <div key={j} className="flex flex-col" style={{ gap: 1 }}>
-                  <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
-                  <div className="rounded-full bg-red-400" style={{ width: DOT - 3, height: DOT - 3 }} />
-                </div>
-              ))}
-            </div>
+          {Array.from({ length: 10 }).map((_, j) => (
+            <div key={j} className="rounded-full bg-red-400" style={{ width: 5, height: 5 }} />
           ))}
         </div>
       ))}
@@ -269,58 +266,63 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
   );
 }
 
-/* ─── Carry/Borrow animation overlay ─── */
+/* ─── Carry/Borrow animation overlay: dots flying between columns ─── */
 type CarryAnimInfo = {
   type: "carry" | "borrow";
   from: PlaceType;
   to: PlaceType;
-  phase: number; // 0=announce, 1=transfer, 2=complete
+  phase: number; // 0=gather in source, 1=fly between columns, 2=land in dest
 } | null;
 
-function CarryOverlay({ anim }: { anim: CarryAnimInfo }) {
-  if (!anim) return null;
+function FlyingDotsOverlay({ anim }: { anim: CarryAnimInfo }) {
+  if (!anim || anim.phase !== 1) return null;
 
   const isCarry = anim.type === "carry";
-  const fromOnes = anim.from === "ones";
+  // Column centers: hundreds=16.7%, tens=50%, ones=83.3%
+  const colCenter = { hundreds: 16.7, tens: 50, ones: 83.3 };
 
-  if (anim.phase === 0) {
-    // Announcement phase
-    return (
-      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-        <div className={`rounded-2xl px-4 py-3 shadow-lg animate-bounce-in ${
-          isCarry ? "bg-yellow-100 border-2 border-yellow-400" : "bg-purple-100 border-2 border-purple-400"
-        }`}>
-          <p className={`text-lg font-black ${isCarry ? "text-yellow-700" : "text-purple-700"}`}>
-            {isCarry ? "10こ！ くりあがり！" : "たりない！ くりさがり！"}
-          </p>
-        </div>
-      </div>
-    );
+  let startX: number, endX: number;
+  if (isCarry) {
+    // Carry: dots fly from source to higher place (right→left)
+    startX = colCenter[anim.from];
+    endX = colCenter[anim.to];
+  } else {
+    // Borrow: bundle flies from higher place to lower (left→right)
+    startX = colCenter[anim.from];
+    endX = colCenter[anim.to];
   }
 
-  if (anim.phase === 1) {
-    // Transfer phase - animated bundle flying between columns
-    return (
-      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-        <div className={`${isCarry ? (fromOnes ? "animate-carry-fly" : "animate-carry-fly") : (fromOnes ? "animate-borrow-fly" : "animate-borrow-fly")}`}>
-          <div className={`rounded-lg px-3 py-2 shadow-lg ${
-            isCarry ? "bg-yellow-300 border-2 border-yellow-500" : "bg-purple-300 border-2 border-purple-500"
-          }`}>
-            <div className="flex gap-0.5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="rounded-full bg-green-500" style={{ width: 6, height: 6 }} />
-              ))}
-            </div>
-            <p className={`text-xs font-black text-center mt-0.5 ${isCarry ? "text-yellow-800" : "text-purple-800"}`}>
-              {isCarry ? "→ たば！" : "→ バラす！"}
-            </p>
-          </div>
+  const dx = endX - startX;
+
+  return (
+    <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
+      <div
+        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-none"
+        style={{
+          left: `${startX}%`,
+          animation: `fly-dots 0.5s ease-in-out forwards`,
+        }}
+      >
+        {/* Flying bundle: 5×2 green dots in a highlighted container */}
+        <div className={`inline-grid grid-cols-5 p-1 rounded-lg shadow-lg border-2 ${
+          isCarry ? "bg-yellow-100 border-yellow-400" : "bg-purple-100 border-purple-400"
+        }`} style={{ gap: 2 }}>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="rounded-full bg-green-500" style={{ width: 8, height: 8 }} />
+          ))}
         </div>
       </div>
-    );
-  }
-
-  return null;
+      {/* Inline keyframe for dynamic translateX */}
+      <style>{`
+        @keyframes fly-dots {
+          0% { left: ${startX}%; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+          70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+          100% { left: ${endX}%; transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 /* ─── Single Place Value Column ─── */
@@ -438,106 +440,99 @@ export default function NumberLinePage() {
 
   const composedAnswer = inputH * 100 + inputT * 10 + inputO;
 
-  /* ─── Carry/Borrow Animation Sequence ─── */
+  /* ─── Carry/Borrow Animation Sequence (no text, dots only) ─── */
   const runCarryAnimation = useCallback((from: PlaceType, to: PlaceType, type: "carry" | "borrow") => {
     animLock.current = true;
     playBundle();
 
-    // Phase 0: Announce
+    // Phase 0: Gather dots in source column (200ms)
     setCarryAnim({ type, from, to, phase: 0 });
+    if (type === "carry") {
+      if (from === "ones") setDotAnimO("gather");
+      else setDotAnimT("gather");
+    } else {
+      if (from === "tens") setDotAnimT("gather");
+      else setDotAnimH("gather");
+    }
 
     setTimeout(() => {
-      // Phase 1: Transfer visual
+      // Phase 1: Flying dots between columns (500ms)
       setCarryAnim({ type, from, to, phase: 1 });
-
+      // Clear source gather
       if (type === "carry") {
-        // Dots gather in source column
-        if (from === "ones") setDotAnimO("gather");
-        else setDotAnimT("gather");
+        if (from === "ones") setDotAnimO(null);
+        else setDotAnimT(null);
       } else {
-        // Dots scatter from source
-        if (to === "ones") setDotAnimT("gather");
-        else setDotAnimH("gather");
+        if (from === "tens") setDotAnimT(null);
+        else setDotAnimH(null);
       }
 
       setTimeout(() => {
-        // Phase 2: Update digits
+        // Phase 2: Update digits, show dots in destination
         if (type === "carry") {
           if (from === "ones") {
-            // ones 9→0 (rolls UP), tens +1 (rolls UP)
             setDirO("up");
             setDirT("up");
             setInputO(0);
-            setDotAnimO(null);
-            // Check cascade: tens might also carry
             setInputT(prev => {
               if (prev === 9) {
-                // Cascade carry tens→hundreds
                 setTimeout(() => {
                   setDirT("up");
                   setDirH("up");
                   setInputT(0);
                   setInputH(ph => Math.min(9, ph + 1));
                   setDotAnimH("scatter");
-                  setTimeout(() => setDotAnimH(null), 400);
-                }, 100);
-                return prev; // will be reset by the timeout
+                  setTimeout(() => setDotAnimH(null), 300);
+                }, 80);
+                return prev;
               }
               return prev + 1;
             });
             setDotAnimT("scatter");
-            setTimeout(() => setDotAnimT(null), 400);
+            setTimeout(() => setDotAnimT(null), 300);
           } else {
-            // tens 9→0 (rolls UP), hundreds +1 (rolls UP)
             setDirT("up");
             setDirH("up");
             setInputT(0);
             setInputH(prev => Math.min(9, prev + 1));
-            setDotAnimT(null);
             setDotAnimH("scatter");
-            setTimeout(() => setDotAnimH(null), 400);
+            setTimeout(() => setDotAnimH(null), 300);
           }
         } else {
-          // Borrow
           if (from === "tens") {
-            // tens -1 (rolls DOWN), ones 0→9 (rolls DOWN)
             setDirT("down");
             setDirO("down");
             setInputT(prev => {
               if (prev === 0) {
-                // Cascade borrow from hundreds
                 setTimeout(() => {
                   setDirH("down");
                   setDirT("down");
                   setInputH(ph => Math.max(0, ph - 1));
                   setInputT(9);
                   setDotAnimT("scatter");
-                  setTimeout(() => setDotAnimT(null), 400);
-                }, 100);
-                return prev; // will be reset by the timeout
+                  setTimeout(() => setDotAnimT(null), 300);
+                }, 80);
+                return prev;
               }
               return prev - 1;
             });
-            setDotAnimT(null);
             setInputO(9);
             setDotAnimO("scatter");
-            setTimeout(() => setDotAnimO(null), 400);
+            setTimeout(() => setDotAnimO(null), 300);
           } else {
-            // hundreds -1 (rolls DOWN), tens 0→9 (rolls DOWN)
             setDirH("down");
             setDirT("down");
             setInputH(prev => Math.max(0, prev - 1));
-            setDotAnimH(null);
             setInputT(9);
             setDotAnimT("scatter");
-            setTimeout(() => setDotAnimT(null), 400);
+            setTimeout(() => setDotAnimT(null), 300);
           }
         }
 
         setCarryAnim(null);
-        setTimeout(() => { animLock.current = false; }, 200);
-      }, 600);
-    }, 500);
+        setTimeout(() => { animLock.current = false; }, 150);
+      }, 500);
+    }, 250);
   }, []);
 
   /* ─── Increment/Decrement handlers ─── */
@@ -771,8 +766,8 @@ export default function NumberLinePage() {
                 animDir={dirO}
               />
 
-              {/* Carry/Borrow overlay */}
-              <CarryOverlay anim={carryAnim} />
+              {/* Flying dots overlay */}
+              <FlyingDotsOverlay anim={carryAnim} />
             </div>
           ) : (
             /* ─── Result display ─── */
