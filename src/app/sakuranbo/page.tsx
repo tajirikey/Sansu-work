@@ -22,7 +22,6 @@ interface SakuranboProblem {
 }
 
 /* ─── Addition problem pools by difficulty ─── */
-// A + B where A+B > 10, both single digit
 const ADD_EASY: [number, number][] = [
   [9,2],[9,3],[9,4],[8,3],[8,4],[9,5],[8,5],
 ];
@@ -35,7 +34,6 @@ const ADD_HARD: [number, number][] = [
 ];
 
 /* ─── Subtraction problem pools by difficulty ─── */
-// A - B where 11<=A<=18, B > A%10 (borrow needed), 減加法
 const SUB_EASY: [number, number][] = [
   [11,2],[11,3],[12,3],[12,4],[11,4],[11,5],[12,5],
 ];
@@ -57,7 +55,6 @@ function makeProblem(a: number, b: number, op: "+" | "-"): SakuranboProblem {
     const cherryRight = b - cherryLeft;
     return { a, b, op, answer: a + b, cherryLeft, cherryRight, cherryTarget: "b" };
   } else {
-    // 減加法: split a into 10 and (a-10)
     const cherryLeft = 10;
     const cherryRight = a - 10;
     return { a, b, op, answer: a - b, cherryLeft, cherryRight, cherryTarget: "a" };
@@ -89,7 +86,6 @@ function generateProblemInner(difficulty: number, mode: Mode): SakuranboProblem 
     let pool: [number, number][];
     if (difficulty <= 1) pool = ADD_EASY;
     else if (difficulty <= 3) pool = [...ADD_EASY, ...ADD_MED];
-    else if (difficulty <= 6) pool = [...ADD_EASY, ...ADD_MED, ...ADD_HARD];
     else pool = [...ADD_EASY, ...ADD_MED, ...ADD_HARD];
     const [a, b] = pickRandom(pool);
     return makeProblem(a, b, "+");
@@ -97,7 +93,6 @@ function generateProblemInner(difficulty: number, mode: Mode): SakuranboProblem 
     let pool: [number, number][];
     if (difficulty <= 1) pool = SUB_EASY;
     else if (difficulty <= 3) pool = [...SUB_EASY, ...SUB_MED];
-    else if (difficulty <= 6) pool = [...SUB_EASY, ...SUB_MED, ...SUB_HARD];
     else pool = [...SUB_EASY, ...SUB_MED, ...SUB_HARD];
     const [a, b] = pickRandom(pool);
     return makeProblem(a, b, "-");
@@ -188,16 +183,20 @@ function CherryInput({
   const displayVal = isPrefilled ? prefill : value;
 
   const sizeClasses = size === "lg"
-    ? "w-16 h-14 text-3xl"
-    : "w-12 h-12 text-2xl";
+    ? "w-16 h-16 text-3xl"
+    : "w-14 h-14 text-2xl";
+
+  const btnClasses = size === "lg"
+    ? "text-2xl w-12 h-10"
+    : "text-2xl w-10 h-9";
 
   return (
-    <div className="flex flex-col items-center gap-0.5">
+    <div className="flex flex-col items-center gap-1">
       {!isPrefilled && (
         <button
           onClick={inc}
           disabled={disabled}
-          className="text-pink-400 text-base active:scale-75 transition-transform disabled:opacity-30 select-none touch-manipulation px-2"
+          className={`${btnClasses} flex items-center justify-center rounded-lg bg-pink-100 text-pink-500 font-bold active:bg-pink-200 active:scale-90 transition-all disabled:opacity-30 select-none touch-manipulation`}
         >
           +
         </button>
@@ -228,12 +227,50 @@ function CherryInput({
         <button
           onClick={dec}
           disabled={disabled}
-          className="text-pink-400 text-base active:scale-75 transition-transform disabled:opacity-30 select-none touch-manipulation px-2"
+          className={`${btnClasses} flex items-center justify-center rounded-lg bg-pink-100 text-pink-500 font-bold active:bg-pink-200 active:scale-90 transition-all disabled:opacity-30 select-none touch-manipulation`}
         >
           -
         </button>
       )}
     </div>
+  );
+}
+
+/* ─── Tappable operand number ─── */
+function OperandButton({
+  value,
+  selected,
+  wrongFlash,
+  disabled,
+  onClick,
+}: {
+  value: number;
+  selected: boolean;
+  wrongFlash: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative flex flex-col items-center px-4 py-2 rounded-2xl transition-all active:scale-95 select-none touch-manipulation
+        ${wrongFlash
+          ? "bg-red-100 border-3 border-red-300 animate-shake"
+          : selected
+            ? "bg-pink-100 border-3 border-pink-400 shadow-md"
+            : disabled
+              ? "bg-transparent border-3 border-transparent"
+              : "bg-pink-50/60 border-3 border-pink-200 shadow-sm hover:border-pink-300"
+        }
+      `}
+    >
+      <span className="text-4xl font-black text-pink-700">{value}</span>
+      {selected && <span className="text-xs text-pink-400 -mt-1">🌸</span>}
+      {!selected && !disabled && !wrongFlash && (
+        <span className="text-[10px] text-pink-300 -mt-1">タップ</span>
+      )}
+    </button>
   );
 }
 
@@ -280,9 +317,7 @@ function DotVisualization({
   const isAdd = problem.op === "+";
 
   if (phase === "correct") {
-    // Show the merged result
     if (isAdd) {
-      // 10 as a bundle + remaining
       return (
         <div className="flex items-start justify-center gap-4 p-3">
           <div className="flex flex-col items-center">
@@ -303,14 +338,13 @@ function DotVisualization({
         </div>
       );
     } else {
-      // Subtraction: show 10 - b = remainder, then + cherryRight
       const remainder = 10 - problem.b;
       return (
         <div className="flex items-start justify-center gap-3 p-3">
           <div className="flex flex-col items-center">
             <div className="inline-grid grid-cols-5 gap-1 justify-items-center">
               {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className={`w-3 h-3 rounded-full ${i < remainder ? "bg-green-500" : "bg-gray-300 line-through"}`} />
+                <div key={i} className={`w-3 h-3 rounded-full ${i < remainder ? "bg-green-500" : "bg-gray-300"}`} />
               ))}
             </div>
             <span className="text-[10px] text-gray-400 mt-0.5">10-{problem.b}={remainder}</span>
@@ -363,7 +397,6 @@ function DotVisualization({
       </div>
     );
   } else {
-    // Subtraction: show a as (10 + remainder) and b
     const hasValidSplit =
       cherryLeftInput !== null &&
       cherryRightInput !== null &&
@@ -465,15 +498,19 @@ export default function SakuranboPage() {
     generateProblem(0, "addition", []),
   );
   const [showReward, setShowReward] = useState(false);
-  const [message, setMessage] = useState("さくらんぼに わけてみよう！");
+  const [message, setMessage] = useState("どちらの かずを わける？ タップしてね！");
 
-  // Inputs
+  // Target selection: user must pick which operand to split
+  const [selectedTarget, setSelectedTarget] = useState<"a" | "b" | null>(null);
+  const [wrongTargetFlash, setWrongTargetFlash] = useState<"a" | "b" | null>(null);
+
+  // Inputs (only active after correct target is selected)
   const [clInput, setClInput] = useState<number | null>(null);
   const [crInput, setCrInput] = useState<number | null>(null);
   const [ansInput, setAnsInput] = useState<number | null>(null);
 
   // Validation state
-  const [phase, setPhase] = useState<"input" | "correct" | "wrong">("input");
+  const [phase, setPhase] = useState<"select" | "input" | "correct" | "wrong">("select");
   const [wrongFields, setWrongFields] = useState<Set<string>>(new Set());
   const [correctFields, setCorrectFields] = useState<Set<string>>(new Set());
   const [attempts, setAttempts] = useState(0);
@@ -488,6 +525,31 @@ export default function SakuranboPage() {
   // For subtraction at higher difficulty, pre-fill cherry left = 10
   const subPrefillCL = problem.op === "-" && difficulty >= 4;
 
+  /* ─── Handle operand tap (target selection) ─── */
+  const handleTargetSelect = useCallback((target: "a" | "b") => {
+    if (phase !== "select") return;
+
+    if (target === problem.cherryTarget) {
+      // Correct! Show cherry UI
+      playBundle();
+      setSelectedTarget(target);
+      setPhase("input");
+      setMessage("さくらんぼに わけてみよう！");
+      setWrongTargetFlash(null);
+    } else {
+      // Wrong target
+      playError();
+      setWrongTargetFlash(target);
+      if (problem.op === "+") {
+        setMessage("たしざんでは うしろの かずを わけるよ！");
+      } else {
+        setMessage("ひきざんでは まえの かずを わけるよ！");
+      }
+      setTimeout(() => setWrongTargetFlash(null), 600);
+    }
+  }, [phase, problem]);
+
+  /* ─── Handle answer check ─── */
   const handleCheck = useCallback(() => {
     const effectiveCL = subPrefillCL ? 10 : clInput;
     if (effectiveCL === null || crInput === null || ansInput === null) {
@@ -529,7 +591,6 @@ export default function SakuranboPage() {
       setAttempts(newAttempts);
 
       if (newAttempts >= 3) {
-        // Auto-show answer after 3 wrong attempts
         setClInput(problem.cherryLeft);
         setCrInput(problem.cherryRight);
         setAnsInput(problem.answer);
@@ -548,13 +609,15 @@ export default function SakuranboPage() {
   const nextProblem = () => {
     lastProblems.current = [...lastProblems.current.slice(-4), problem];
     setProblem(generateProblem(difficulty, mode, lastProblems.current));
+    setSelectedTarget(null);
+    setWrongTargetFlash(null);
     setClInput(null);
     setCrInput(null);
     setAnsInput(null);
-    setPhase("input");
+    setPhase("select");
     setWrongFields(new Set());
     setCorrectFields(new Set());
-    setMessage("さくらんぼに わけてみよう！");
+    setMessage("どちらの かずを わける？ タップしてね！");
     setAttempts(0);
     setShowReward(false);
   };
@@ -563,13 +626,15 @@ export default function SakuranboPage() {
     setMode(newMode);
     lastProblems.current = [];
     setProblem(generateProblem(difficulty, newMode, []));
+    setSelectedTarget(null);
+    setWrongTargetFlash(null);
     setClInput(null);
     setCrInput(null);
     setAnsInput(null);
-    setPhase("input");
+    setPhase("select");
     setWrongFields(new Set());
     setCorrectFields(new Set());
-    setMessage("さくらんぼに わけてみよう！");
+    setMessage("どちらの かずを わける？ タップしてね！");
     setAttempts(0);
   };
 
@@ -585,7 +650,7 @@ export default function SakuranboPage() {
     totalCount.current > 0
       ? Math.round((correctCount.current / totalCount.current) * 100)
       : 0;
-  const isAdd = problem.op === "+";
+  const cherryVisible = selectedTarget !== null; // cherry UI only after correct target selection
   const inputDisabled = phase === "correct";
 
   return (
@@ -664,103 +729,109 @@ export default function SakuranboPage() {
 
         {/* ═══ Problem + Cherry Branch ═══ */}
         <div className="bg-white/80 border-2 border-pink-200 rounded-2xl p-4 shadow-sm flex-1 flex flex-col gap-3">
-          {/* Problem row */}
+          {/* Problem row: tappable operands */}
           <div className="flex items-center justify-center gap-2">
-            {/* Number A (with cherry if subtraction) */}
-            <div className="relative flex flex-col items-center">
-              <span className="text-4xl font-black text-pink-700">
-                {problem.a}
-              </span>
-              {!isAdd && (
-                <span className="text-[10px] text-pink-400">🌸</span>
-              )}
-            </div>
+            {/* Number A */}
+            <OperandButton
+              value={problem.a}
+              selected={selectedTarget === "a"}
+              wrongFlash={wrongTargetFlash === "a"}
+              disabled={cherryVisible || inputDisabled}
+              onClick={() => handleTargetSelect("a")}
+            />
 
             {/* Operator */}
             <span className="text-2xl font-bold text-gray-400">
-              {isAdd ? "＋" : "−"}
+              {problem.op === "+" ? "＋" : "−"}
             </span>
 
-            {/* Number B (with cherry if addition) */}
-            <div className="relative flex flex-col items-center">
-              <span className="text-4xl font-black text-pink-700">
-                {problem.b}
-              </span>
-              {isAdd && (
-                <span className="text-[10px] text-pink-400">🌸</span>
-              )}
-            </div>
+            {/* Number B */}
+            <OperandButton
+              value={problem.b}
+              selected={selectedTarget === "b"}
+              wrongFlash={wrongTargetFlash === "b"}
+              disabled={cherryVisible || inputDisabled}
+              onClick={() => handleTargetSelect("b")}
+            />
 
             {/* Equals */}
             <span className="text-2xl font-bold text-gray-400">=</span>
 
-            {/* Answer input */}
-            <CherryInput
-              value={ansInput}
-              onChange={setAnsInput}
-              max={18}
-              wrong={wrongFields.has("ans")}
-              correct={correctFields.has("ans")}
-              disabled={inputDisabled}
-              size="lg"
-            />
+            {/* Answer input - only after cherry target selected */}
+            {cherryVisible ? (
+              <CherryInput
+                value={ansInput}
+                onChange={setAnsInput}
+                max={18}
+                wrong={wrongFields.has("ans")}
+                correct={correctFields.has("ans")}
+                disabled={inputDisabled}
+                size="lg"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-50 border-[3px] border-gray-200">
+                <span className="text-gray-300 text-lg">?</span>
+              </div>
+            )}
           </div>
 
-          {/* Cherry branch SVG + inputs */}
-          <div className="flex flex-col items-center">
-            {/* SVG branches */}
-            <svg
-              width="140"
-              height="36"
-              viewBox="0 0 140 36"
-              className="block"
-            >
-              <path
-                d="M70 0 L70 10 Q70 16 50 28 L30 36"
-                stroke="#EC4899"
-                strokeWidth="2.5"
-                fill="none"
-                strokeLinecap="round"
-                className={
-                  phase === "correct" ? "animate-[cherry-pulse_0.6s_ease-in-out]" : ""
-                }
-              />
-              <path
-                d="M70 10 Q70 16 90 28 L110 36"
-                stroke="#EC4899"
-                strokeWidth="2.5"
-                fill="none"
-                strokeLinecap="round"
-                className={
-                  phase === "correct" ? "animate-[cherry-pulse_0.6s_ease-in-out]" : ""
-                }
-              />
-            </svg>
+          {/* Cherry branch SVG + inputs (only visible after correct target selection) */}
+          {cherryVisible && (
+            <div className="flex flex-col items-center animate-slide-up">
+              {/* SVG branches */}
+              <svg
+                width="160"
+                height="40"
+                viewBox="0 0 160 40"
+                className="block"
+              >
+                <path
+                  d="M80 0 L80 12 Q80 18 55 30 L35 40"
+                  stroke="#EC4899"
+                  strokeWidth="2.5"
+                  fill="none"
+                  strokeLinecap="round"
+                  className={
+                    phase === "correct" ? "animate-[cherry-pulse_0.6s_ease-in-out]" : ""
+                  }
+                />
+                <path
+                  d="M80 12 Q80 18 105 30 L125 40"
+                  stroke="#EC4899"
+                  strokeWidth="2.5"
+                  fill="none"
+                  strokeLinecap="round"
+                  className={
+                    phase === "correct" ? "animate-[cherry-pulse_0.6s_ease-in-out]" : ""
+                  }
+                />
+              </svg>
 
-            {/* Cherry inputs */}
-            <div className="flex gap-10">
-              <CherryInput
-                value={clInput}
-                onChange={setClInput}
-                max={problem.op === "-" ? 18 : 9}
-                wrong={wrongFields.has("cl")}
-                correct={correctFields.has("cl")}
-                disabled={inputDisabled}
-                prefill={subPrefillCL ? 10 : undefined}
-              />
-              <CherryInput
-                value={crInput}
-                onChange={setCrInput}
-                max={9}
-                wrong={wrongFields.has("cr")}
-                correct={correctFields.has("cr")}
-                disabled={inputDisabled}
-              />
+              {/* Cherry inputs */}
+              <div className="flex gap-8 -mt-1">
+                <CherryInput
+                  value={clInput}
+                  onChange={setClInput}
+                  max={problem.op === "-" ? 18 : 9}
+                  wrong={wrongFields.has("cl")}
+                  correct={correctFields.has("cl")}
+                  disabled={inputDisabled}
+                  prefill={subPrefillCL ? 10 : undefined}
+                />
+                <CherryInput
+                  value={crInput}
+                  onChange={setCrInput}
+                  max={9}
+                  wrong={wrongFields.has("cr")}
+                  correct={correctFields.has("cr")}
+                  disabled={inputDisabled}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Intermediate calculation display */}
-          {(clInput !== null || subPrefillCL) && crInput !== null && (
+          {cherryVisible && (clInput !== null || subPrefillCL) && crInput !== null && (
             <IntermediateCalc
               problem={problem}
               cherryLeft={subPrefillCL ? 10 : clInput}
@@ -773,8 +844,8 @@ export default function SakuranboPage() {
             <DotVisualization
               problem={problem}
               phase={phase === "correct" ? "correct" : phase === "wrong" ? "wrong" : "input"}
-              cherryLeftInput={subPrefillCL ? 10 : clInput}
-              cherryRightInput={crInput}
+              cherryLeftInput={cherryVisible ? (subPrefillCL ? 10 : clInput) : null}
+              cherryRightInput={cherryVisible ? crInput : null}
             />
           </div>
 
@@ -784,9 +855,11 @@ export default function SakuranboPage() {
               className={`rounded-xl p-3 text-center ${
                 phase === "correct"
                   ? "bg-green-50 border-2 border-green-200"
-                  : phase === "wrong"
+                  : phase === "wrong" || wrongTargetFlash
                     ? "bg-red-50 border-2 border-red-200"
-                    : "bg-pink-50 border border-pink-200"
+                    : phase === "select"
+                      ? "bg-amber-50 border-2 border-amber-200"
+                      : "bg-pink-50 border border-pink-200"
               }`}
             >
               <p className="text-gray-700 text-sm whitespace-pre-line font-bold">
@@ -805,6 +878,10 @@ export default function SakuranboPage() {
             >
               つぎのもんだい →
             </button>
+          ) : phase === "select" ? (
+            <div className="text-pink-400 text-sm font-bold py-3">
+              ↑ わける かずを えらんでね
+            </div>
           ) : (
             <button
               onClick={handleCheck}
