@@ -86,6 +86,10 @@ const config: Config = {
           "50%": { transform: "scale(0.5)", opacity: "0.7" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "cherry-pulse": {
+          "0%, 100%": { "stroke-width": "2.5", opacity: "1" },
+          "50%": { "stroke-width": "4.5", opacity: "0.8" },
+        },
       },
       animation: {
         "bounce-in": "bounce-in 0.5s ease-out",
@@ -100,6 +104,7 @@ const config: Config = {
         "pop-in": "pop-in 0.3s ease-out",
         "gather-dots": "gather-dots 0.4s ease-in forwards",
         "scatter-dots": "scatter-dots 0.4s ease-out forwards",
+        "cherry-pulse": "cherry-pulse 0.6s ease-in-out",
       },
     },
   },

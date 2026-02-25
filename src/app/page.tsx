@@ -38,6 +38,14 @@ const rooms = [
     bgColor: "from-orange-500 to-orange-600",
     borderColor: "border-orange-400",
   },
+  {
+    href: "/sakuranbo",
+    title: "さくらんぼけいさん",
+    subtitle: "わけて たして ひいてみよう",
+    emoji: "🌸",
+    bgColor: "from-pink-500 to-pink-600",
+    borderColor: "border-pink-400",
+  },
 ];
 
 export default function Home() {
