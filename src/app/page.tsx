@@ -46,6 +46,30 @@ const rooms = [
     bgColor: "from-pink-500 to-pink-600",
     borderColor: "border-pink-400",
   },
+  {
+    href: "/pair-ten",
+    title: "10のペアさがし",
+    subtitle: "あわせて10になる ペアをみつけよう",
+    emoji: "🔟",
+    bgColor: "from-cyan-500 to-cyan-600",
+    borderColor: "border-cyan-400",
+  },
+  {
+    href: "/balance",
+    title: "すうじてんびん",
+    subtitle: "どちらが おおきい？ くらべてみよう",
+    emoji: "⚖️",
+    bgColor: "from-indigo-500 to-indigo-600",
+    borderColor: "border-indigo-400",
+  },
+  {
+    href: "/shopping",
+    title: "おかいものゲーム",
+    subtitle: "コインをえらんで おかいものしよう",
+    emoji: "🛒",
+    bgColor: "from-emerald-500 to-emerald-600",
+    borderColor: "border-emerald-400",
+  },
 ];
 
 export default function Home() {
