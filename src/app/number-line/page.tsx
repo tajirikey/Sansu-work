@@ -866,15 +866,18 @@ export default function NumberLinePage() {
                 </div>
               )}
 
-              {/* Next button */}
+              {/* Tap to continue hint */}
               <div className="text-center mt-auto pt-2">
-                <button onClick={nextProblem} className="mc-btn text-lg px-8 py-3">
-                  つぎのもんだい →
-                </button>
+                <p className="text-gray-400 text-sm animate-pulse py-3">タップして つぎへ</p>
               </div>
             </div>
           )}
         </div>
+
+        {/* Tap-to-continue overlay */}
+        {(cleared || showCorrectAnswer) && (
+          <div className="fixed inset-0 z-40" onClick={nextProblem} />
+        )}
 
         {/* Submit button (when not yet answered) */}
         {!cleared && !showCorrectAnswer && (

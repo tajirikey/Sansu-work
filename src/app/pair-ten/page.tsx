@@ -295,19 +295,19 @@ export default function PairTenPage() {
           </div>
         ) : (
           /* Game board */
-          <div className="flex-1 flex flex-col gap-1 min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 min-h-0">
             <p className="text-center text-sm text-gray-500 font-bold flex-shrink-0">
               あわせて <span className="text-cyan-600 text-lg">10</span> になる ペアを タップ！
             </p>
 
-            {/* Card grid: 4x2, max height controlled */}
-            <div className="flex-1 grid grid-cols-4 grid-rows-2 gap-2 min-h-0" style={{ maxHeight: "calc(100dvh - 180px)" }}>
+            {/* Card grid: 4x2, compact and centered */}
+            <div className="grid grid-cols-4 gap-2 w-full max-w-sm flex-shrink-0">
               {cards.map((card) => (
                 <button
                   key={card.id}
                   onClick={() => handleCardTap(card.id)}
                   disabled={card.matched}
-                  className={`rounded-2xl text-4xl font-black transition-all select-none touch-manipulation max-h-32
+                  className={`aspect-[4/3] rounded-2xl text-4xl font-black transition-all select-none touch-manipulation
                     ${card.matched
                       ? "opacity-0 scale-75"
                       : card.wrong

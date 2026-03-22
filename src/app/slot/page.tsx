@@ -454,16 +454,17 @@ export default function SlotPage() {
           </div>
         )}
 
+        {/* Tap-to-continue overlay */}
+        {cleared && <div className="fixed inset-0 z-40" onClick={nextQuestion} />}
+
         {/* action buttons */}
-        <div className="text-center mb-2">
+        <div className="text-center mb-2 relative z-50">
           {!cleared ? (
             <button onClick={handleCheck} className="mc-btn mc-btn-blue text-base px-8 py-2.5">
               こたえあわせ ✓
             </button>
           ) : (
-            <button onClick={nextQuestion} className="mc-btn text-base px-8 py-2.5 animate-slide-up">
-              つぎのもんだい →
-            </button>
+            <p className="text-gray-400 text-sm animate-pulse py-2.5">タップして つぎへ</p>
           )}
         </div>
 

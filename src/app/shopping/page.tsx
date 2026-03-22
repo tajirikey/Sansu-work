@@ -282,16 +282,17 @@ export default function ShoppingPage() {
               </div>
             </div>
 
-            {/* Feedback */}
-            <div className="text-center flex-1 flex flex-col items-center justify-center gap-2 min-h-0">
+            {/* Feedback - tap anywhere to continue */}
+            {phase === "correct" && (
+              <div className="fixed inset-0 z-40" onClick={next} />
+            )}
+            <div className="text-center flex-1 flex flex-col items-center justify-center gap-2 min-h-0 relative z-50">
               {phase === "correct" && (
                 <>
                   <p className="text-green-600 font-bold text-xl animate-bounce">
                     ⭕ ぴったり！ すごい！
                   </p>
-                  <button onClick={next} className="mc-btn text-lg px-8 py-3">
-                    つぎの おかいもの！
-                  </button>
+                  <p className="text-gray-400 text-sm animate-pulse">タップして つぎへ</p>
                 </>
               )}
               {phase === "over" && (

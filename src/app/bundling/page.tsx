@@ -398,8 +398,11 @@ export default function BundlingPage() {
           </div>
         </div>
 
+        {/* Tap-to-continue overlay */}
+        {cleared && <div className="fixed inset-0 z-40" onClick={nextProblem} />}
+
         {/* action buttons — sticky bottom */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-amber-50 via-amber-50/95 to-transparent pt-3 pb-2">
+        <div className="sticky bottom-0 bg-gradient-to-t from-amber-50 via-amber-50/95 to-transparent pt-3 pb-2 relative z-50">
           {!cleared ? (
             <div className="flex items-center justify-center gap-2">
               <button onClick={clearSelection} className="text-gray-500 text-xs underline px-2">
@@ -427,9 +430,7 @@ export default function BundlingPage() {
             </div>
           ) : (
             <div className="text-center animate-slide-up">
-              <button onClick={nextProblem} className="mc-btn text-lg px-8 py-3">
-                つぎのもんだい →
-              </button>
+              <p className="text-gray-400 text-sm animate-pulse py-3">タップして つぎへ</p>
             </div>
           )}
         </div>

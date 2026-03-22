@@ -230,18 +230,19 @@ export default function PlaceValuePage() {
           />
         </div>
 
+        {/* Tap-to-continue overlay */}
+        {cleared && <div className="fixed inset-0 z-40" onClick={nextProblem} />}
+
         {/* check / next */}
         {!cleared ? (
-          <div className="text-center">
+          <div className="text-center relative z-50">
             <button onClick={handleCheck} className="mc-btn mc-btn-blue text-lg px-8 py-3">
               こたえあわせ ✓
             </button>
           </div>
         ) : (
-          <div className="text-center animate-slide-up">
-            <button onClick={nextProblem} className="mc-btn text-xl px-10 py-4">
-              つぎのもんだい →
-            </button>
+          <div className="text-center animate-slide-up relative z-50">
+            <p className="text-gray-400 text-sm animate-pulse py-4">タップして つぎへ</p>
           </div>
         )}
       </div>

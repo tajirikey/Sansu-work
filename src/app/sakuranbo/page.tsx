@@ -869,15 +869,15 @@ export default function SakuranboPage() {
           )}
         </div>
 
+        {/* Tap-to-continue overlay */}
+        {phase === "correct" && (
+          <div className="fixed inset-0 z-40" onClick={nextProblem} />
+        )}
+
         {/* Action button */}
-        <div className="text-center py-3">
+        <div className="text-center py-3 relative z-50">
           {phase === "correct" ? (
-            <button
-              onClick={nextProblem}
-              className="mc-btn text-lg px-8 py-3"
-            >
-              つぎのもんだい →
-            </button>
+            <p className="text-gray-400 text-sm animate-pulse py-3">タップして つぎへ</p>
           ) : phase === "select" ? (
             <div className="text-pink-400 text-sm font-bold py-3">
               ↑ わける かずを えらんでね

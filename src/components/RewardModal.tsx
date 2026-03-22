@@ -53,7 +53,10 @@ export default function RewardModal({ show, onClose }: RewardModalProps) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={!item && revealed ? onClose : undefined}
+    >
       <div
         className={`bg-gradient-to-b ${item ? RARITY_BG[item.rarity] : "from-gray-50 to-gray-100 border-gray-300"} rounded-2xl p-8 max-w-sm w-full text-center border-2 shadow-2xl`}
       >
@@ -85,12 +88,7 @@ export default function RewardModal({ show, onClose }: RewardModalProps) {
           <div className="py-8">
             <p className="text-amber-600 text-xl font-bold mb-2">🎉 コンプリート！ 🎉</p>
             <p className="text-gray-700">ぜんぶのアイテムをあつめたよ！</p>
-            <button
-              onClick={onClose}
-              className="mt-6 bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
-            >
-              とじる
-            </button>
+            <p className="text-gray-400 text-sm mt-4 animate-pulse">タップして とじる</p>
           </div>
         )}
       </div>
