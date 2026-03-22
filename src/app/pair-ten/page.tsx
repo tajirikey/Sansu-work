@@ -17,16 +17,31 @@ interface Card {
   wrong: boolean;
 }
 
-function generateCards(count: number): Card[] {
+let nextId = 0;
+
+function generateCards(count: number, existing?: Card[]): Card[] {
   const cards: Card[] = [];
-  let id = 0;
-  // Ensure at least one valid pair exists
   const pairCount = Math.floor(count / 2);
+
+  // Collect values already on the board (unmatched)
+  const activeValues = existing
+    ? existing.filter((c) => !c.matched).map((c) => c.value)
+    : [];
+
   for (let i = 0; i < pairCount; i++) {
-    const a = Math.floor(Math.random() * 8) + 1; // 1-8
+    // Pick a value, avoiding duplicates of existing board values when possible
+    let a: number;
+    let attempts = 0;
+    do {
+      a = Math.floor(Math.random() * 8) + 1; // 1-8
+      attempts++;
+    } while (
+      attempts < 20 &&
+      activeValues.concat(cards.map((c) => c.value)).filter((v) => v === a).length >= 2
+    );
     const b = 10 - a;
-    cards.push({ id: id++, value: a, matched: false, selected: false, wrong: false });
-    cards.push({ id: id++, value: b, matched: false, selected: false, wrong: false });
+    cards.push({ id: nextId++, value: a, matched: false, selected: false, wrong: false });
+    cards.push({ id: nextId++, value: b, matched: false, selected: false, wrong: false });
   }
   // Shuffle
   for (let i = cards.length - 1; i > 0; i--) {
@@ -37,10 +52,20 @@ function generateCards(count: number): Card[] {
 }
 
 function refillCards(cards: Card[]): Card[] {
+  const active = cards.filter((c) => !c.matched);
+  const activeValues = active.map((c) => c.value);
+
   return cards.map((c) => {
     if (c.matched) {
-      const a = Math.floor(Math.random() * 8) + 1;
-      return { ...c, value: a, matched: false, selected: false, wrong: false, id: c.id + 1000 };
+      // Pick value avoiding duplicates on the board
+      let a: number;
+      let attempts = 0;
+      do {
+        a = Math.floor(Math.random() * 8) + 1;
+        attempts++;
+      } while (attempts < 20 && activeValues.filter((v) => v === a).length >= 2);
+      activeValues.push(a);
+      return { ...c, value: a, matched: false, selected: false, wrong: false, id: nextId++ };
     }
     return c;
   });
@@ -57,12 +82,19 @@ function hasValidPair(cards: Card[]): boolean {
   return false;
 }
 
+const LEVELS = [
+  { label: "かんたん", time: 60, desc: "60びょう" },
+  { label: "ふつう", time: 45, desc: "45びょう" },
+  { label: "むずかしい", time: 30, desc: "30びょう" },
+];
+
 export default function PairTenPage() {
   const [cards, setCards] = useState<Card[]>(() => generateCards(8));
   const [selected, setSelected] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
+  const [levelIdx, setLevelIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameState, setGameState] = useState<"ready" | "playing" | "done">("ready");
   const [showReward, setShowReward] = useState(false);
@@ -104,12 +136,13 @@ export default function PairTenPage() {
   }, [gameState, pairsFound]);
 
   const startGame = () => {
+    nextId = 0;
     setCards(generateCards(8));
     setSelected([]);
     setScore(0);
     setCombo(0);
     setBestCombo(0);
-    setTimeLeft(60);
+    setTimeLeft(LEVELS[levelIdx].time);
     setPairsFound(0);
     setMessage("");
     setGameState("playing");
@@ -200,11 +233,13 @@ export default function PairTenPage() {
     }
   }, [gameState, cards, selected, combo]);
 
+  const maxTime = LEVELS[levelIdx].time;
+
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-cyan-50 to-amber-50 p-3 flex flex-col">
-      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-cyan-50 to-amber-50 p-3 flex flex-col">
+      <div className="max-w-lg mx-auto w-full flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <Link href="/" className="text-cyan-700 text-sm hover:underline">
             &larr; もどる
           </Link>
@@ -212,7 +247,7 @@ export default function PairTenPage() {
         </div>
 
         {/* Score / Timer bar */}
-        <div className="bg-white/90 border border-cyan-200 rounded-2xl p-3 mb-3 shadow-sm">
+        <div className="bg-white/90 border border-cyan-200 rounded-2xl p-3 mb-3 shadow-sm flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-cyan-700 font-bold text-lg">{score}<span className="text-xs text-gray-400 ml-1">てん</span></p>
@@ -234,7 +269,7 @@ export default function PairTenPage() {
             <div className="mt-2 h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-cyan-400 to-cyan-600"
-                style={{ width: `${(timeLeft / 60) * 100}%` }}
+                style={{ width: `${(timeLeft / maxTime) * 100}%` }}
               />
             </div>
           )}
@@ -253,6 +288,25 @@ export default function PairTenPage() {
                 2つの かずを みつけよう！
               </p>
             </div>
+
+            {/* Level selector */}
+            <div className="flex gap-2">
+              {LEVELS.map((lv, i) => (
+                <button
+                  key={i}
+                  onClick={() => setLevelIdx(i)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                    levelIdx === i
+                      ? "bg-cyan-500 text-white shadow-md scale-105"
+                      : "bg-white border-2 border-cyan-200 text-cyan-600 active:scale-95"
+                  }`}
+                >
+                  <span className="block">{lv.label}</span>
+                  <span className="block text-[10px] opacity-70">{lv.desc}</span>
+                </button>
+              ))}
+            </div>
+
             <button onClick={startGame} className="mc-btn text-lg px-10 py-4">
               スタート！
             </button>
@@ -278,26 +332,26 @@ export default function PairTenPage() {
                 </div>
               </div>
             </div>
-            <button onClick={startGame} className="mc-btn text-lg px-8 py-3">
+            <button onClick={() => setGameState("ready")} className="mc-btn text-lg px-8 py-3">
               もういちど！
             </button>
           </div>
         ) : (
           /* Game board */
-          <div className="flex-1 flex flex-col gap-3">
+          <div className="flex-1 flex flex-col gap-2 min-h-0">
             {/* Instruction */}
-            <p className="text-center text-sm text-gray-500 font-bold">
+            <p className="text-center text-sm text-gray-500 font-bold flex-shrink-0">
               あわせて <span className="text-cyan-600 text-lg">10</span> になる ペアを タップ！
             </p>
 
-            {/* Card grid */}
-            <div className="grid grid-cols-4 gap-3 flex-1 content-center">
+            {/* Card grid - fills remaining space */}
+            <div className="flex-1 grid grid-cols-4 grid-rows-2 gap-3 min-h-0">
               {cards.map((card) => (
                 <button
                   key={card.id}
                   onClick={() => handleCardTap(card.id)}
                   disabled={card.matched}
-                  className={`aspect-square rounded-2xl text-3xl font-black transition-all select-none touch-manipulation
+                  className={`rounded-2xl text-4xl md:text-5xl font-black transition-all select-none touch-manipulation
                     ${card.matched
                       ? "opacity-0 scale-75"
                       : card.wrong
