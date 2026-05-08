@@ -48,8 +48,8 @@ const rooms = [
   },
   {
     href: "/pair-ten",
-    title: "10のペアさがし",
-    subtitle: "あわせて10になる ペアをみつけよう",
+    title: "ペアさがし",
+    subtitle: "あわせておなじかずになるペアをみつけよう",
     emoji: "🔟",
     bgColor: "from-cyan-500 to-cyan-600",
     borderColor: "border-cyan-400",
