@@ -483,9 +483,9 @@ export default function HissanPage() {
                 // Show carry marker for this column if carries exist
                 const dataColIdx = ci - 1; // data column index (0-based)
                 const ansIdx = answerCols.findIndex((ac) => ac.col === ci);
-                const carryVal = ansIdx >= 0 ? carries[ansIdx] : 0;
+                // carry-in to this column = carry-out from the column to its right (ansIdx + 1)
+                const carryVal = ansIdx >= 0 ? (carries[ansIdx + 1] ?? 0) : 0;
                 const isAnimating = carryAnimCol !== null && ci === carryAnimCol - 1;
-                // Carry goes to the column to the left of where it was generated
                 const showCarry = carryVal > 0 && !isAnimating;
 
                 return (
