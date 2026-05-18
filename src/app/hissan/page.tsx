@@ -430,33 +430,33 @@ export default function HissanPage() {
   const activeAnswerGridCol = currentColInfo?.colGridIdx ?? -1;
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-sky-50 to-blue-50 p-2 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
+    <div className="fixed inset-0 bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
       <div className="max-w-lg mx-auto w-full flex flex-col h-full">
-        {/* Header + Stats in one row */}
-        <div className="flex items-center justify-between mb-0.5 flex-shrink-0">
-          <Link href="/" className="text-sky-700 text-sm hover:underline">&larr; もどる</Link>
-          <div className="flex items-center gap-3 text-center">
-            <div><span className="text-gray-400 text-[9px]">スコア </span><span className="text-sky-600 font-bold text-sm">{score}</span></div>
-            <div><span className="text-gray-400 text-[9px]">れんぞく </span><span className="text-orange-500 font-bold text-sm">{streak}</span></div>
+        {/* Header */}
+        <div className="flex items-center justify-between flex-shrink-0">
+          <Link href="/" className="text-sky-700 text-base hover:underline">&larr; もどる</Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sky-600 font-bold text-base">{score}てん</span>
+            <span className="text-orange-500 font-bold text-base">{streak}れんぞく</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {phaseBuild && (
               <button
                 onClick={() => setShowGuide((g) => !g)}
-                className={`text-[10px] px-1.5 py-0.5 rounded-full border transition-all ${showGuide ? "bg-sky-100 border-sky-300 text-sky-600" : "bg-gray-100 border-gray-300 text-gray-400"}`}
+                className={`text-xs px-2 py-1 rounded-full border font-bold transition-all ${showGuide ? "bg-sky-100 border-sky-300 text-sky-600" : "bg-gray-100 border-gray-300 text-gray-400"}`}
               >
                 ガイド{showGuide ? "ON" : "OFF"}
               </button>
             )}
-            <button onClick={() => { setProblem(null); setPhase("select"); }} className="text-gray-400 text-[10px] underline">{LEVELS[levelIdx].label}</button>
+            <button onClick={() => { setProblem(null); setPhase("select"); }} className="text-gray-400 text-xs underline">{LEVELS[levelIdx].label}</button>
           </div>
         </div>
 
         {/* All content packed together in center */}
-        <div className="flex-1 flex flex-col items-center justify-center min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-2">
           {/* Horizontal equation */}
-          <div className="bg-white/90 border-2 border-sky-200 rounded-xl px-4 py-1.5 shadow-md text-center flex-shrink-0 mb-1">
-            <p className="text-xl font-black text-sky-700 tracking-wider">
+          <div className="bg-white/90 border-2 border-sky-200 rounded-2xl px-6 py-2 shadow-md text-center flex-shrink-0">
+            <p className="text-3xl font-black text-sky-700 tracking-wider">
               {problem.a} {problem.op} {problem.b} = <span className="text-sky-300">？</span>
             </p>
           </div>
@@ -466,22 +466,18 @@ export default function HissanPage() {
             {/* Carry markers row (above row 0) */}
             <div className="flex">
               {cells[0].map((_, ci) => {
-                // Show carry marker for this column if carries exist
-                const dataColIdx = ci - 1; // data column index (0-based)
                 const ansIdx = answerCols.findIndex((ac) => ac.col === ci);
-                // carry-in to this column = carry-out from the column to its right (ansIdx + 1)
                 const carryVal = ansIdx >= 0 ? (carries[ansIdx + 1] ?? 0) : 0;
                 const isAnimating = carryAnimCol !== null && ci === carryAnimCol - 1;
                 const showCarry = carryVal > 0 && !isAnimating;
 
                 return (
-                  <div key={ci} className="w-12 h-6 flex items-center justify-center relative">
+                  <div key={ci} className="w-16 h-8 flex items-center justify-center relative">
                     {showCarry && (
-                      <span className="text-red-500 text-sm font-bold animate-bounce">{carryVal}</span>
+                      <span className="text-red-500 text-base font-bold animate-bounce">{carryVal}</span>
                     )}
-                    {/* Carry animation: number flying up from below */}
                     {carryAnimCol !== null && ci === carryAnimCol - 1 && (
-                      <span className="absolute text-red-500 text-lg font-black animate-[carry-fly-up_1s_ease-out_forwards]">1</span>
+                      <span className="absolute text-red-500 text-xl font-black animate-[carry-fly-up_1s_ease-out_forwards]">1</span>
                     )}
                   </div>
                 );
@@ -502,14 +498,14 @@ export default function HissanPage() {
                     const isAnswerFilled = phaseAnswer && ri === 2 && userGrid[2]?.[ci] !== null;
 
                     if (state.expected === null) {
-                      return <div key={ci} className="w-12 h-12" />;
+                      return <div key={ci} className="w-16 h-16" />;
                     }
 
                     return (
                       <button
                         key={ci}
                         onClick={() => phaseBuild ? handleCellTap(ri, ci) : undefined}
-                        className={`w-12 h-12 border-2 flex items-center justify-center text-xl font-black transition-all select-none touch-manipulation
+                        className={`w-16 h-16 border-2 flex items-center justify-center text-3xl font-black transition-all select-none touch-manipulation
                           ${isActive
                             ? "border-sky-400 bg-sky-100 scale-105 shadow-md"
                             : isAnswerActive
@@ -524,7 +520,6 @@ export default function HissanPage() {
                           }
                         `}
                       >
-                        {/* Show content */}
                         {(isFilled || (phaseAnswer && ri <= 1)) ? (
                           <span className="text-gray-800">{state.current ?? state.expected}</span>
                         ) : isAnswerFilled ? (
@@ -539,7 +534,7 @@ export default function HissanPage() {
                 {ri === 1 && (
                   <div className="flex">
                     {row.map((_, ci) => (
-                      <div key={ci} className="w-12 h-0.5 bg-gray-700" />
+                      <div key={ci} className="w-16 h-1 bg-gray-700" />
                     ))}
                   </div>
                 )}
@@ -549,25 +544,25 @@ export default function HissanPage() {
 
           {/* Answer phase: column sum prompt */}
           {phaseAnswer && currentColInfo && ansSubPhase !== "carry-anim" && ansSubPhase !== "done" && (
-            <div className={`bg-white/95 border-2 rounded-xl p-2 shadow-md text-center mt-1 transition-all ${colSumWrong ? "border-red-400 animate-shake" : "border-amber-300"}`}>
+            <div className={`bg-white/95 border-2 rounded-2xl px-6 py-3 shadow-md text-center transition-all ${colSumWrong ? "border-red-400 animate-shake" : "border-amber-300"}`}>
               {currentColInfo.hasCarry ? (
                 <>
-                  <p className="text-amber-600 text-xs font-bold mb-0.5">
+                  <p className="text-amber-600 text-lg font-bold mb-1">
                     {currentColInfo.cs.digitA} + {currentColInfo.cs.digitB}
                     {currentColInfo.carryIn > 0 && ` + ${currentColInfo.carryIn}`}
                     {" "}= ？
                   </p>
-                  <div className="flex items-center justify-center gap-1">
-                    <div className={`w-9 h-10 rounded-lg border-2 flex items-center justify-center text-xl font-black ${colSumInput.length >= 1 ? "border-amber-400 bg-amber-50 text-amber-700" : "border-dashed border-gray-300"}`}>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`w-14 h-16 rounded-xl border-3 flex items-center justify-center text-3xl font-black ${colSumInput.length >= 1 ? "border-amber-400 bg-amber-50 text-amber-700" : "border-dashed border-gray-300"}`}>
                       {colSumInput[0] || ""}
                     </div>
-                    <div className={`w-9 h-10 rounded-lg border-2 flex items-center justify-center text-xl font-black ${colSumInput.length >= 2 ? "border-amber-400 bg-amber-50 text-amber-700" : colSumInput.length === 1 ? "border-amber-300 bg-amber-50/50" : "border-dashed border-gray-300"}`}>
+                    <div className={`w-14 h-16 rounded-xl border-3 flex items-center justify-center text-3xl font-black ${colSumInput.length >= 2 ? "border-amber-400 bg-amber-50 text-amber-700" : colSumInput.length === 1 ? "border-amber-300 bg-amber-50/50" : "border-dashed border-gray-300"}`}>
                       {colSumInput[1] || ""}
                     </div>
                   </div>
                 </>
               ) : (
-                <p className="text-amber-600 text-sm font-bold">
+                <p className="text-amber-600 text-xl font-bold">
                   {currentColInfo.cs.digitA}
                   {problem.op === "+" ? " + " : " − "}
                   {currentColInfo.cs.digitB}
@@ -580,15 +575,15 @@ export default function HissanPage() {
 
           {/* Carry animation message */}
           {ansSubPhase === "carry-anim" && (
-            <p className="text-red-500 text-sm font-bold animate-bounce mt-1">
+            <p className="text-red-500 text-lg font-bold animate-bounce">
               くりあがり！ 1を つぎのくらいへ！
             </p>
           )}
 
           {/* Message */}
           {message && ansSubPhase !== "carry-anim" && (
-            <p className={`text-center text-xs font-bold mt-0.5 ${
-              phase === "correct" ? "text-green-600 text-sm animate-bounce" : "text-sky-600"
+            <p className={`text-center font-bold ${
+              phase === "correct" ? "text-green-600 text-lg animate-bounce" : "text-sky-600 text-sm"
             }`}>
               {phase === "correct" && "⭕ "}{message}
             </p>
@@ -596,11 +591,11 @@ export default function HissanPage() {
 
           {/* Phase indicator */}
           {(phaseBuild || phaseAnswer) && (
-            <div className="flex gap-2 justify-center mt-0.5">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${phaseBuild ? "bg-sky-500 text-white" : "bg-gray-200 text-gray-400"}`}>
+            <div className="flex gap-3 justify-center">
+              <span className={`text-sm px-3 py-1 rounded-full font-bold ${phaseBuild ? "bg-sky-500 text-white" : "bg-gray-200 text-gray-400"}`}>
                 1. ならべる
               </span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${phaseAnswer ? "bg-amber-500 text-white" : "bg-gray-200 text-gray-400"}`}>
+              <span className={`text-sm px-3 py-1 rounded-full font-bold ${phaseAnswer ? "bg-amber-500 text-white" : "bg-gray-200 text-gray-400"}`}>
                 2. こたえ
               </span>
             </div>
@@ -610,11 +605,11 @@ export default function HissanPage() {
           {phase === "correct" ? (
             <>
               <div className="fixed inset-0 z-40" onClick={next} />
-              <p className="text-center text-gray-400 text-sm animate-pulse py-1 relative z-50">タップして つぎへ</p>
+              <p className="text-center text-gray-400 text-lg animate-pulse relative z-50">タップして つぎへ</p>
             </>
           ) : (phaseBuild || phaseAnswer) ? (
-            <div className="mt-1.5 flex-shrink-0">
-              <div className="grid grid-cols-5 gap-1.5 max-w-[280px] mx-auto">
+            <div className="flex-shrink-0 w-full max-w-sm mx-auto">
+              <div className="grid grid-cols-5 gap-2">
                 {(phaseBuild ? ["1","2","3","4","5","6","7","8","9","0","+","−"] : ["1","2","3","4","5","6","7","8","9","0"]).map((n) => (
                   <button
                     key={n}
@@ -627,7 +622,7 @@ export default function HissanPage() {
                       }
                     }}
                     disabled={phaseBuild ? !activeCell : ansSubPhase === "carry-anim"}
-                    className={`h-11 rounded-xl font-black text-xl transition-all active:scale-90 select-none touch-manipulation disabled:opacity-30
+                    className={`h-14 rounded-2xl font-black text-2xl transition-all active:scale-90 select-none touch-manipulation disabled:opacity-30
                       ${n === "+" || n === "−"
                         ? "bg-orange-100 border-2 border-orange-300 text-orange-600"
                         : "bg-white border-2 border-sky-200 text-sky-700 shadow-sm"
@@ -645,11 +640,10 @@ export default function HissanPage() {
 
       <RewardModal show={showReward} onClose={() => setShowReward(false)} />
 
-      {/* Carry fly animation style */}
       <style jsx global>{`
         @keyframes carry-fly-up {
-          0% { opacity: 0; transform: translateY(56px) scale(0.5); }
-          30% { opacity: 1; transform: translateY(20px) scale(1.3); }
+          0% { opacity: 0; transform: translateY(64px) scale(0.5); }
+          30% { opacity: 1; transform: translateY(24px) scale(1.3); }
           60% { opacity: 1; transform: translateY(0px) scale(1.1); }
           100% { opacity: 1; transform: translateY(0px) scale(1); }
         }
