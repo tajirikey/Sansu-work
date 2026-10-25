@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { getAllItems, getCollectedItems, resetCollection, MinecraftItem } from "@/lib/rewards";
 import PixelItem from "./PixelItem";
 import GameHeader from "./GameHeader";
+import { rem } from "@/lib/ui";
 import { RARITY } from "./RewardModal";
 
 /* ─── Mirrored PixelItem for back face ─── */
@@ -11,8 +12,8 @@ function PixelItemMirrored({ item, size }: { item: MinecraftItem; size: number }
   const n = item.pixels.length;
   const cellSize = size / n;
   return (
-    <div className="inline-block" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <div className="inline-block" style={{ width: rem(size), height: rem(size) }}>
+      <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
         {item.pixels.map((row, y) =>
           row.map((color, x) =>
             color ? (
@@ -245,8 +246,8 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
               transition: isAnimating ? "transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)" : "none",
               transformStyle: "preserve-3d",
               position: "relative",
-              width: renderSize + 48,
-              height: renderSize + 48,
+              width: rem(renderSize + 48),
+              height: rem(renderSize + 48),
             }}
           >
             {/* Front face */}
@@ -384,7 +385,7 @@ export default function Collection() {
                 {isCollected ? (
                   <>
                     <PixelItem item={item} size={44} />
-                    <span className="text-[9px] text-ink-soft mt-1 text-center leading-tight line-clamp-1 w-full">
+                    <span className="text-[0.5625rem] text-ink-soft mt-1 text-center leading-tight line-clamp-1 w-full">
                       {item.nameJa}
                     </span>
                     <span className="absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: r.color }} />

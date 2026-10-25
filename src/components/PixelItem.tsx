@@ -1,6 +1,7 @@
 "use client";
 
 import { MinecraftItem } from "@/lib/rewards";
+import { rem } from "@/lib/ui";
 
 interface PixelItemProps {
   item: MinecraftItem;
@@ -14,8 +15,8 @@ export default function PixelItem({ item, size = 64, className = "", silhouette 
   const cellSize = size / item.pixels.length;
 
   return (
-    <div className={`inline-block ${className}`} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <div className={`inline-block ${className}`} style={{ width: rem(size), height: rem(size) }}>
+      <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
         {item.pixels.map((row, y) =>
           row.map((color, x) =>
             color ? (

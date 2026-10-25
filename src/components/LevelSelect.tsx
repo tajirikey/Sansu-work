@@ -46,7 +46,7 @@ export default function LevelSelect({ emoji, title, subtitle, accent, tint, leve
               </span>
               <span className="min-w-0">
                 <span className="block font-black text-ink text-base leading-tight">{lv.label}</span>
-                <span className="block text-[11px] text-ink-soft mt-0.5 leading-tight">{lv.desc}</span>
+                <span className="block text-[0.6875rem] text-ink-soft mt-0.5 leading-tight">{lv.desc}</span>
               </span>
             </button>
           ))}

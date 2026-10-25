@@ -112,8 +112,8 @@ function Coin({ value, label, size, onClick, disabled, highlight }: {
     borderColor = "border-gray-400";
   }
 
-  const sizeClass = size === 60 ? "w-[60px] h-[60px]" : size === 52 ? "w-[52px] h-[52px]" : "w-[44px] h-[44px]";
-  const innerSizeClass = size === 60 ? "w-[48px] h-[48px]" : size === 52 ? "w-[42px] h-[42px]" : "w-[36px] h-[36px]";
+  const sizeClass = size === 60 ? "w-[3.75rem] h-[3.75rem]" : size === 52 ? "w-[3.25rem] h-[3.25rem]" : "w-[2.75rem] h-[2.75rem]";
+  const innerSizeClass = size === 60 ? "w-[3rem] h-[3rem]" : size === 52 ? "w-[2.625rem] h-[2.625rem]" : "w-[2.25rem] h-[2.25rem]";
   const hasHole = value === 50 || value === 5;
 
   return (
@@ -127,13 +127,13 @@ function Coin({ value, label, size, onClick, disabled, highlight }: {
         {hasHole && (
           <div className="absolute w-2.5 h-2.5 rounded-full bg-gradient-to-b from-yellow-500 to-yellow-700 border border-yellow-600" />
         )}
-        <span className={`${textColor} font-black drop-shadow-sm ${value >= 100 ? "text-[10px]" : "text-xs"} ${hasHole ? "opacity-0" : ""}`}>
+        <span className={`${textColor} font-black drop-shadow-sm ${value >= 100 ? "text-[0.625rem]" : "text-xs"} ${hasHole ? "opacity-0" : ""}`}>
           {label}
         </span>
       </div>
       {/* Value text on top of hole coins */}
       {hasHole && (
-        <span className={`absolute inset-0 flex items-end justify-center pb-1 ${textColor} font-black text-[9px] drop-shadow-sm`}>
+        <span className={`absolute inset-0 flex items-end justify-center pb-1 ${textColor} font-black text-[0.5625rem] drop-shadow-sm`}>
           {label}
         </span>
       )}
@@ -269,19 +269,21 @@ export default function ShoppingPage() {
           />
         ) : (
           <>
+            {/* Cards (enlarged on tablets) */}
+            <div className="flex-shrink-0 md:[zoom:1.25] md:mt-4">
             {/* Stats bar */}
             <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               <div className="flex items-center justify-between text-center">
                 <div>
-                  <p className="text-gray-400 text-[10px]">スコア</p>
+                  <p className="text-gray-400 text-[0.625rem]">スコア</p>
                   <p className="text-emerald-600 font-bold text-base leading-tight">{score}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-[10px]">れんぞく</p>
+                  <p className="text-gray-400 text-[0.625rem]">れんぞく</p>
                   <p className="text-orange-500 font-bold text-base leading-tight">{streak}</p>
                 </div>
                 <div>
-                  <button onClick={() => setPhase("select")} className="text-gray-400 text-[10px] underline">
+                  <button onClick={() => setPhase("select")} className="text-gray-400 text-[0.625rem] underline">
                     レベルへんこう
                   </button>
                   <p className="text-purple-600 font-bold text-xs">{SHOP_LEVELS[shopLevelIdx].label}</p>
@@ -303,7 +305,7 @@ export default function ShoppingPage() {
             {/* Coins area */}
             <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               {is50Mode && (
-                <p className="text-center text-[10px] text-yellow-600 font-bold mb-1">
+                <p className="text-center text-[0.625rem] text-yellow-600 font-bold mb-1">
                   50えんだまを かならず つかおう！
                 </p>
               )}
@@ -319,7 +321,7 @@ export default function ShoppingPage() {
                       highlight={should50 && coin.key === "c50"}
                     />
                     {/* Count + remove area */}
-                    <div className="flex items-center justify-center h-7 min-w-[40px]">
+                    <div className="flex items-center justify-center h-7 min-w-[2.5rem]">
                       {coins[coin.key] > 0 ? (
                         <button
                           onClick={() => removeCoin(coin.key)}
@@ -345,7 +347,7 @@ export default function ShoppingPage() {
             <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-[10px]">いま いれたおかね</p>
+                  <p className="text-gray-400 text-[0.625rem]">いま いれたおかね</p>
                   <p className={`text-2xl font-black tabular-nums ${total === product.price ? "text-green-500" : total > product.price ? "text-red-500" : "text-gray-700"}`}>
                     {total}<span className="text-xs text-gray-400 ml-0.5">えん</span>
                   </p>
@@ -362,6 +364,8 @@ export default function ShoppingPage() {
               </div>
             </div>
 
+            </div>
+
             {/* Feedback */}
             {phase === "correct" && (
               <div className="fixed inset-0 z-40" onClick={next} />
@@ -369,7 +373,7 @@ export default function ShoppingPage() {
             <div className="text-center flex-1 flex flex-col items-center justify-center gap-1 min-h-0 relative z-50">
               {phase === "correct" && (
                 <>
-                  <p className="text-green-600 font-bold text-xl animate-bounce">
+                  <p className="text-green-600 font-bold text-xl md:text-3xl animate-bounce">
                     ⭕ ぴったり！ すごい！
                   </p>
                   <p className="text-gray-400 text-sm animate-pulse">タップして つぎへ</p>

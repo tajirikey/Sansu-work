@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MinecraftItem, getRandomUncollectedItem, addCollectedItem } from "@/lib/rewards";
 import { playLevelUp } from "@/lib/sounds";
 import PixelItem from "./PixelItem";
+import { rem } from "@/lib/ui";
 
 interface RewardModalProps {
   show: boolean;
@@ -27,7 +28,7 @@ const SPARKS = [
 
 function Spark({ size, color }: { size: number; color: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 20 20">
+    <svg style={{ width: rem(size), height: rem(size) }} viewBox="0 0 20 20">
       <path d="M10 0c.8 5.6 3.6 8.4 10 10-6.4 1.6-9.2 4.4-10 10-.8-5.6-3.6-8.4-10-10C6.4 8.4 9.2 5.6 10 0z" fill={color} />
     </svg>
   );

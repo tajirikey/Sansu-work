@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
@@ -190,7 +191,7 @@ function AnimatedDigit({ value, animDir }: { value: number; animDir: "up" | "dow
   }, [value, animDir]);
 
   return (
-    <div className="overflow-hidden relative flex items-center justify-center" style={{ height: 56 }}>
+    <div className="overflow-hidden relative flex items-center justify-center" style={{ height: rem(56) }}>
       <span className={`text-5xl font-black tabular-nums ${anim || ""}`}>
         {display}
       </span>
@@ -215,21 +216,21 @@ type DotAnim = "gather" | "scatter" | "hidden" | null;
 function ColumnDots({ count, type, animating }: { count: number; type: PlaceType; animating?: DotAnim }) {
   // Hidden = dots are flying in the overlay, don't show here
   if (animating === "hidden") {
-    return <div className="min-h-[52px]" />;
+    return <div className="min-h-[3.25rem]" />;
   }
 
   const DOT = 10;
 
   if (type === "ones") {
     return (
-      <div className="grid grid-cols-5 gap-1 justify-items-center min-h-[52px] px-1 content-start">
+      <div className="grid grid-cols-5 gap-1 justify-items-center min-h-[3.25rem] px-1 content-start">
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
             className={`rounded-full bg-green-500 shadow-sm ${
               animating === "scatter" && i === count - 1 ? "animate-pop-in" : ""
             } ${animating === "gather" ? "animate-gather-dots" : ""}`}
-            style={{ width: DOT, height: DOT }}
+            style={{ width: rem(DOT), height: rem(DOT) }}
           />
         ))}
       </div>
@@ -238,7 +239,7 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
 
   if (type === "tens") {
     return (
-      <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
+      <div className="flex flex-wrap gap-1 justify-center items-start min-h-[3.25rem] px-0.5 content-start">
         {Array.from({ length: count }).map((_, i) => (
           <TenBundle
             key={i}
@@ -253,7 +254,7 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
 
   // hundreds: 10×10 grid of tiny red dots (100 per block)
   return (
-    <div className="flex flex-wrap gap-1 justify-center items-start min-h-[52px] px-0.5 content-start">
+    <div className="flex flex-wrap gap-1 justify-center items-start min-h-[3.25rem] px-0.5 content-start">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
@@ -263,7 +264,7 @@ function ColumnDots({ count, type, animating }: { count: number; type: PlaceType
           style={{ gap: 0.5 }}
         >
           {Array.from({ length: 100 }).map((_, j) => (
-            <div key={j} className="rounded-full bg-red-400" style={{ width: 2, height: 2 }} />
+            <div key={j} className="rounded-full bg-red-400" style={{ width: rem(2), height: rem(2) }} />
           ))}
         </div>
       ))}
@@ -313,7 +314,7 @@ function FlyingDotsOverlay({ anim, gridRef }: {
               <div
                 key={i}
                 className={`rounded-full shadow-sm ${i === 9 ? "bg-yellow-400 animate-pop-in" : "bg-green-500"}`}
-                style={{ width: 10, height: 10 }}
+                style={{ width: rem(10), height: rem(10) }}
               />
             ))}
           </div>
@@ -337,7 +338,7 @@ function FlyingDotsOverlay({ anim, gridRef }: {
         >
           <div className="inline-grid grid-cols-5 p-1 rounded-lg bg-yellow-50/80 border border-yellow-300 shadow-lg" style={{ gap: 2 }}>
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="rounded-full bg-green-500" style={{ width: 8, height: 8 }} />
+              <div key={i} className="rounded-full bg-green-500" style={{ width: rem(8), height: rem(8) }} />
             ))}
           </div>
         </div>
@@ -725,12 +726,12 @@ export default function NumberLinePage() {
               <span className="text-2xl">{difficulty <= 1 ? "⭐" : difficulty <= 4 ? "⭐⭐" : difficulty <= 7 ? "⭐⭐⭐" : "👑"}</span>
               <div>
                 <p className="text-purple-700 font-bold text-sm leading-tight">{levelName}</p>
-                <p className="text-gray-400 text-[10px]">Lv.{difficulty}</p>
+                <p className="text-gray-400 text-[0.625rem]">Lv.{difficulty}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-orange-500 font-bold text-lg leading-tight">{streak}🔥</p>
-              <p className="text-gray-400 text-[10px]">れんぞく</p>
+              <p className="text-gray-400 text-[0.625rem]">れんぞく</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -913,7 +914,7 @@ function CarryExplanation({ problem }: { problem: Problem }) {
         <div className="flex items-center justify-center gap-1 mt-1">
           <div className="flex gap-0.5">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className={`rounded-full border ${i < ones ? "bg-green-400 border-green-500" : "bg-yellow-400 border-yellow-500"}`} style={{ width: 10, height: 10 }} />
+              <div key={i} className={`rounded-full border ${i < ones ? "bg-green-400 border-green-500" : "bg-yellow-400 border-yellow-500"}`} style={{ width: rem(10), height: rem(10) }} />
             ))}
           </div>
           <span className="mx-1">→</span>
@@ -921,7 +922,7 @@ function CarryExplanation({ problem }: { problem: Problem }) {
             {[0, 1].map(row => (
               <div key={row} className="flex" style={{ gap: 1 }}>
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 8, height: 8 }} />
+                  <div key={j} className="rounded-full bg-blue-400" style={{ width: rem(8), height: rem(8) }} />
                 ))}
               </div>
             ))}
@@ -943,7 +944,7 @@ function CarryExplanation({ problem }: { problem: Problem }) {
             {[0, 1].map(row => (
               <div key={row} className="flex" style={{ gap: 1 }}>
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="rounded-full bg-blue-400" style={{ width: 8, height: 8 }} />
+                  <div key={j} className="rounded-full bg-blue-400" style={{ width: rem(8), height: rem(8) }} />
                 ))}
               </div>
             ))}
@@ -951,7 +952,7 @@ function CarryExplanation({ problem }: { problem: Problem }) {
           <span className="mx-1">→</span>
           <div className="flex gap-0.5 flex-wrap" style={{ maxWidth: 70 }}>
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="rounded-full bg-green-400 border border-green-500" style={{ width: 10, height: 10 }} />
+              <div key={i} className="rounded-full bg-green-400 border border-green-500" style={{ width: rem(10), height: rem(10) }} />
             ))}
           </div>
         </div>

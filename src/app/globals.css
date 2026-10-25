@@ -24,6 +24,14 @@ html {
   font-feature-settings: "palt";
 }
 
+/* Tablets: grow the whole UI (sizes are rem-based). Capped by height so the
+   no-scroll game screens still fit; phones stay at 16px. */
+@media (min-width: 700px) {
+  html {
+    font-size: clamp(16px, min(2.5vw, 2svh), 22px);
+  }
+}
+
 body {
   background: var(--cream);
   color: var(--ink);

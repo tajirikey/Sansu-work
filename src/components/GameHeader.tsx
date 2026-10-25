@@ -3,7 +3,7 @@ import Link from "next/link";
 export function BackButton({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} aria-label="もどる" className="back-btn flex-shrink-0">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none">
         <path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </Link>

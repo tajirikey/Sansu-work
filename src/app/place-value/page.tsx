@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import TenBundle from "@/components/TenBundle";
 import HundredPlate from "@/components/HundredPlate";
@@ -52,7 +53,7 @@ function PlaceColumn({
   const s = styles[color];
 
   return (
-    <div className={`${s.bg} rounded-xl border ${s.border} p-3 flex-1 flex flex-col items-center min-h-[300px]`}>
+    <div className={`${s.bg} rounded-xl border ${s.border} p-3 flex-1 flex flex-col items-center min-h-[18.75rem]`}>
       <p className={`${s.text} text-xs font-bold mb-1`}>{label}</p>
       <p className="text-gray-800 text-3xl font-bold mb-3">{count}</p>
 
@@ -219,7 +220,7 @@ export default function PlaceValuePage() {
             renderUnit={() => (
               <div
                 className="rounded-full bg-green-500 border-2 border-green-300"
-                style={{ width: DOT_SIZE, height: DOT_SIZE }}
+                style={{ width: rem(DOT_SIZE), height: rem(DOT_SIZE) }}
               />
             )}
           />

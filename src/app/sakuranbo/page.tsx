@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
@@ -206,12 +207,12 @@ function CherryInput({
         className={`${sizeClasses} rounded-full flex items-center justify-center
           font-bold transition-all select-none
           ${wrong
-            ? "bg-red-100 border-[3px] border-red-400 text-red-600 animate-shake"
+            ? "bg-red-100 border-[0.1875rem] border-red-400 text-red-600 animate-shake"
             : correct
-              ? "bg-green-100 border-[3px] border-green-400 text-green-600 animate-pop-in"
+              ? "bg-green-100 border-[0.1875rem] border-green-400 text-green-600 animate-pop-in"
               : isPrefilled
-                ? "bg-pink-100 border-[3px] border-pink-300 text-pink-500"
-                : "bg-pink-50 border-[3px] border-pink-300 text-pink-700 shadow-md active:scale-95"
+                ? "bg-pink-100 border-[0.1875rem] border-pink-300 text-pink-500"
+                : "bg-pink-50 border-[0.1875rem] border-pink-300 text-pink-700 shadow-md active:scale-95"
           }
           ${disabled && !isPrefilled ? "opacity-60" : ""}
           ${!isPrefilled && !disabled ? "cursor-pointer" : ""}
@@ -268,7 +269,7 @@ function OperandButton({
       <span className="text-4xl font-black text-pink-700">{value}</span>
       {selected && <span className="text-xs text-pink-400 -mt-1">🌸</span>}
       {!selected && !disabled && !wrongFlash && (
-        <span className="text-[10px] text-pink-300 -mt-1">タップ</span>
+        <span className="text-[0.625rem] text-pink-300 -mt-1">タップ</span>
       )}
     </button>
   );
@@ -326,12 +327,12 @@ function DotVisualization({
                 <div key={i} className={`w-3 h-3 rounded-full ${i < problem.a ? "bg-green-500" : "bg-pink-400"}`} />
               ))}
             </div>
-            <span className="text-[10px] text-gray-400 mt-0.5">10</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">10</span>
           </div>
           <span className="text-gray-400 text-lg mt-2">+</span>
           <div className="flex flex-col items-center">
             <DotGroup count={problem.cherryRight} color="green" animClass="animate-pop-in" />
-            <span className="text-[10px] text-gray-400 mt-0.5">{problem.cherryRight}</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.cherryRight}</span>
           </div>
           <span className="text-gray-400 text-lg mt-2">=</span>
           <span className="text-green-600 font-bold text-xl mt-1">{problem.answer}</span>
@@ -347,12 +348,12 @@ function DotVisualization({
                 <div key={i} className={`w-3 h-3 rounded-full ${i < remainder ? "bg-green-500" : "bg-gray-300"}`} />
               ))}
             </div>
-            <span className="text-[10px] text-gray-400 mt-0.5">10-{problem.b}={remainder}</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">10-{problem.b}={remainder}</span>
           </div>
           <span className="text-gray-400 text-lg mt-2">+</span>
           <div className="flex flex-col items-center">
             <DotGroup count={problem.cherryRight} color="pink" animClass="animate-pop-in" />
-            <span className="text-[10px] text-gray-400 mt-0.5">{problem.cherryRight}</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.cherryRight}</span>
           </div>
           <span className="text-gray-400 text-lg mt-2">=</span>
           <span className="text-green-600 font-bold text-xl mt-1">{problem.answer}</span>
@@ -374,24 +375,24 @@ function DotVisualization({
       <div className="flex items-start justify-center gap-4 p-3">
         <div className="flex flex-col items-center">
           <DotGroup count={problem.a} color="green" />
-          <span className="text-[10px] text-gray-400 mt-0.5">{problem.a}</span>
+          <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.a}</span>
         </div>
         <span className="text-gray-400 text-lg mt-2">+</span>
         {hasValidSplit ? (
           <>
             <div className="flex flex-col items-center">
               <DotGroup count={cherryLeftInput!} color="pink" />
-              <span className="text-[10px] text-pink-400 mt-0.5">{cherryLeftInput}</span>
+              <span className="text-[0.625rem] text-pink-400 mt-0.5">{cherryLeftInput}</span>
             </div>
             <div className="flex flex-col items-center">
               <DotGroup count={cherryRightInput!} color="green" />
-              <span className="text-[10px] text-gray-400 mt-0.5">{cherryRightInput}</span>
+              <span className="text-[0.625rem] text-gray-400 mt-0.5">{cherryRightInput}</span>
             </div>
           </>
         ) : (
           <div className="flex flex-col items-center">
             <DotGroup count={problem.b} color="green" />
-            <span className="text-[10px] text-gray-400 mt-0.5">{problem.b}</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.b}</span>
           </div>
         )}
       </div>
@@ -408,23 +409,23 @@ function DotVisualization({
           <>
             <div className="flex flex-col items-center">
               <DotGroup count={cherryLeftInput!} color="pink" />
-              <span className="text-[10px] text-pink-400 mt-0.5">{cherryLeftInput}</span>
+              <span className="text-[0.625rem] text-pink-400 mt-0.5">{cherryLeftInput}</span>
             </div>
             <div className="flex flex-col items-center">
               <DotGroup count={cherryRightInput!} color="green" />
-              <span className="text-[10px] text-gray-400 mt-0.5">{cherryRightInput}</span>
+              <span className="text-[0.625rem] text-gray-400 mt-0.5">{cherryRightInput}</span>
             </div>
           </>
         ) : (
           <div className="flex flex-col items-center">
             <DotGroup count={problem.a} color="green" />
-            <span className="text-[10px] text-gray-400 mt-0.5">{problem.a}</span>
+            <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.a}</span>
           </div>
         )}
         <span className="text-gray-400 text-lg mt-2">-</span>
         <div className="flex flex-col items-center">
           <DotGroup count={problem.b} color="red" />
-          <span className="text-[10px] text-gray-400 mt-0.5">{problem.b}</span>
+          <span className="text-[0.625rem] text-gray-400 mt-0.5">{problem.b}</span>
         </div>
       </div>
     );
@@ -676,14 +677,14 @@ export default function SakuranboPage() {
                 <p className="text-pink-700 font-bold text-sm leading-tight">
                   {levelName}
                 </p>
-                <p className="text-gray-400 text-[10px]">Lv.{difficulty}</p>
+                <p className="text-gray-400 text-[0.625rem]">Lv.{difficulty}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-orange-500 font-bold text-lg leading-tight">
                 {streak}🔥
               </p>
-              <p className="text-gray-400 text-[10px]">れんぞく</p>
+              <p className="text-gray-400 text-[0.625rem]">れんぞく</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -762,7 +763,7 @@ export default function SakuranboPage() {
                 size="lg"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-50 border-[3px] border-gray-200">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-50 border-[0.1875rem] border-gray-200">
                 <span className="text-gray-300 text-lg">?</span>
               </div>
             )}
@@ -773,8 +774,7 @@ export default function SakuranboPage() {
             <div className="flex flex-col items-center animate-slide-up">
               {/* SVG branches */}
               <svg
-                width="160"
-                height="40"
+                style={{ width: rem(160), height: rem(40) }}
                 viewBox="0 0 160 40"
                 className="block"
               >

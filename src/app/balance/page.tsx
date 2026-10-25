@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import LevelSelect from "@/components/LevelSelect";
 import { playPop, playSuccess, playError } from "@/lib/sounds";
@@ -56,7 +57,7 @@ function decompose(n: number): { hundreds: number; tens: number; ones: number } 
 function DotVis({ n }: { n: number }) {
   const { hundreds, tens, ones } = decompose(n);
   return (
-    <div className="flex flex-wrap items-end justify-center gap-1 min-h-[32px]">
+    <div className="flex flex-wrap items-end justify-center gap-1 min-h-[2rem]">
       {Array.from({ length: hundreds }).map((_, i) => (
         <div key={`h${i}`} className="w-4 h-4 bg-red-400 rounded-sm border border-red-500" />
       ))}
@@ -173,17 +174,17 @@ export default function BalancePage() {
             <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0">
               <div className="flex items-center justify-between text-center">
                 <div>
-                  <p className="text-gray-400 text-[10px]">スコア</p>
+                  <p className="text-gray-400 text-[0.625rem]">スコア</p>
                   <p className="text-indigo-600 font-bold text-lg leading-tight">{score}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-[10px]">れんぞく</p>
+                  <p className="text-gray-400 text-[0.625rem]">れんぞく</p>
                   <p className="text-orange-500 font-bold text-lg leading-tight">{streak}</p>
                 </div>
                 <div>
                   <button
                     onClick={(e) => { e.stopPropagation(); setPhase("select"); }}
-                    className="text-gray-400 text-[10px] underline"
+                    className="text-gray-400 text-[0.625rem] underline"
                   >
                     レベルへんこう
                   </button>
@@ -217,10 +218,10 @@ export default function BalancePage() {
 
             {/* Balance: numbers are tappable */}
             <div className="flex-1 flex flex-col items-center justify-center min-h-0">
-              <div className="relative w-full max-w-sm flex-shrink-0">
+              <div className="relative w-full max-w-sm flex-shrink-0 md:[zoom:1.3]">
                 {/* Fulcrum */}
                 <div className="flex justify-center">
-                  <div className="relative" style={{ width: 280 }}>
+                  <div className="relative" style={{ width: rem(280) }}>
                     {/* Beam */}
                     <div
                       className="w-full h-2 bg-indigo-500 rounded-full origin-center transition-transform duration-700 ease-out relative"
@@ -231,7 +232,7 @@ export default function BalancePage() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleChoice("left"); }}
                           disabled={phase !== "choose"}
-                          className={`rounded-xl px-3 py-3 shadow-md text-center min-w-[90px] transition-all active:scale-95 select-none touch-manipulation border-3
+                          className={`rounded-xl px-3 py-3 shadow-md text-center min-w-[5.625rem] transition-all active:scale-95 select-none touch-manipulation border-3
                             ${phase !== "choose"
                               ? (problem.answer === "left"
                                 ? "bg-green-100 border-green-400"
@@ -266,7 +267,7 @@ export default function BalancePage() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleChoice("right"); }}
                           disabled={phase !== "choose"}
-                          className={`rounded-xl px-3 py-3 shadow-md text-center min-w-[90px] transition-all active:scale-95 select-none touch-manipulation border-3
+                          className={`rounded-xl px-3 py-3 shadow-md text-center min-w-[5.625rem] transition-all active:scale-95 select-none touch-manipulation border-3
                             ${phase !== "choose"
                               ? (problem.answer === "right"
                                 ? "bg-green-100 border-green-400"
@@ -282,7 +283,7 @@ export default function BalancePage() {
 
                     {/* Fulcrum triangle */}
                     <div className="flex justify-center mt-1">
-                      <div className="w-0 h-0 border-l-[18px] border-r-[18px] border-b-[24px] border-l-transparent border-r-transparent border-b-indigo-400" />
+                      <div className="w-0 h-0 border-l-[1.125rem] border-r-[1.125rem] border-b-[1.5rem] border-l-transparent border-r-transparent border-b-indigo-400" />
                     </div>
                   </div>
                 </div>
@@ -293,7 +294,7 @@ export default function BalancePage() {
                 <div className="w-full grid grid-cols-2 gap-3 mt-4 animate-[fadeIn_0.3s_ease-out] flex-shrink-0">
                   <div className="surface rounded-xl p-2 text-center">
                     <DotVis n={problem.left} />
-                    <p className="text-[10px] text-gray-400 mt-1">
+                    <p className="text-[0.625rem] text-gray-400 mt-1">
                       {decompose(problem.left).hundreds > 0 && <span className="text-red-400">●百 </span>}
                       {decompose(problem.left).tens > 0 && <span className="text-blue-400">●十 </span>}
                       <span className="text-green-400">●一</span>
@@ -301,7 +302,7 @@ export default function BalancePage() {
                   </div>
                   <div className="surface rounded-xl p-2 text-center">
                     <DotVis n={problem.right} />
-                    <p className="text-[10px] text-gray-400 mt-1">
+                    <p className="text-[0.625rem] text-gray-400 mt-1">
                       {decompose(problem.right).hundreds > 0 && <span className="text-red-400">●百 </span>}
                       {decompose(problem.right).tens > 0 && <span className="text-blue-400">●十 </span>}
                       <span className="text-green-400">●一</span>

@@ -428,8 +428,8 @@ export default function HissanPage() {
         <div className="flex items-center justify-between gap-2 flex-shrink-0">
           <BackButton />
           <div className="flex items-center gap-1.5">
-            <span className="chip text-sky-600 tabular-nums">{score}<span className="text-[10px] text-ink-faint">てん</span></span>
-            <span className="chip text-orange-500 tabular-nums">{streak}<span className="text-[10px] text-ink-faint">れんぞく</span></span>
+            <span className="chip text-sky-600 tabular-nums">{score}<span className="text-[0.625rem] text-ink-faint">てん</span></span>
+            <span className="chip text-orange-500 tabular-nums">{streak}<span className="text-[0.625rem] text-ink-faint">れんぞく</span></span>
           </div>
           <div className="flex items-center gap-2">
             {phaseBuild && (

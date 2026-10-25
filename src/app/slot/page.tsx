@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
@@ -75,7 +76,7 @@ function generateQuestionInner(difficulty: number): Question {
 }
 
 /* ─── slot roller ─── */
-const CELL_H = 88;
+const BASE_CELL_H = 88;
 
 interface SlotRollerProps {
   value: number;
@@ -95,6 +96,8 @@ function SlotRoller({
   labelClass, borderClass, bgClass, centerClass, digitColor,
   wrong, disabled,
 }: SlotRollerProps) {
+  const ui = useUiScale();
+  const CELL_H = BASE_CELL_H * ui;
   const [dragOffset, setDragOffset] = useState(0);
   const [isSnapping, setIsSnapping] = useState(false);
   const dragging = useRef(false);
@@ -151,7 +154,7 @@ function SlotRoller({
       delta += CELL_H;
     }
     setDragOffset(delta);
-  }, [doRoll]);
+  }, [doRoll, CELL_H]);
 
   const onPointerUp = useCallback(() => {
     if (!dragging.current) return;
@@ -177,7 +180,7 @@ function SlotRoller({
     setIsSnapping(true);
     setDragOffset(0);
     setTimeout(() => setIsSnapping(false), 180);
-  }, [dragOffset, doRoll]);
+  }, [dragOffset, doRoll, CELL_H]);
 
   const digits = [2, 1, 0, -1, -2].map(i => ((value + i) % 10 + 10) % 10);
   const totalY = -CELL_H + dragOffset;
@@ -191,7 +194,7 @@ function SlotRoller({
         className={`overflow-hidden rounded-2xl border-4 touch-none select-none
           ${wrong ? "border-red-500 animate-shake" : borderClass}
           ${disabled ? "opacity-60" : ""} ${bgClass}`}
-        style={{ width: 92, height: CELL_H * 3 }}
+        style={{ width: 92 * ui, height: CELL_H * 3 }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -218,7 +221,7 @@ function SlotRoller({
                   <span
                     className="font-bold"
                     style={{
-                      fontSize: dist === 0 ? 72 : dist === 1 ? 36 : 24,
+                      fontSize: (dist === 0 ? 72 : dist === 1 ? 36 : 24) * ui,
                       color: dist === 0 ? (wrong ? "#EF4444" : digitColor) : "#d1d5db",
                       opacity: dist === 0 ? 1 : dist === 1 ? 0.5 : 0.25,
                     }}
@@ -464,11 +467,11 @@ export default function SlotPage() {
 
         {/* visual */}
         <div className="surface rounded-xl p-2.5 flex-1 overflow-y-auto">
-          <p className="text-gray-400 text-[10px] font-bold mb-1.5">いまの かずのかたち</p>
+          <p className="text-gray-400 text-[0.625rem] font-bold mb-1.5">いまの かずのかたち</p>
 
           {hundreds > 0 && (
             <div className="mb-1.5">
-              <p className="text-red-500 text-[10px] font-bold mb-0.5">百 × {hundreds}</p>
+              <p className="text-red-500 text-[0.625rem] font-bold mb-0.5">百 × {hundreds}</p>
               <div className="flex flex-wrap gap-1">
                 {Array.from({ length: hundreds }).map((_, i) => (
                   <HundredPlate key={i} />
@@ -479,7 +482,7 @@ export default function SlotPage() {
 
           {tens > 0 && (
             <div className="mb-1.5">
-              <p className="text-blue-500 text-[10px] font-bold mb-0.5">十 × {tens}</p>
+              <p className="text-blue-500 text-[0.625rem] font-bold mb-0.5">十 × {tens}</p>
               <div className="flex flex-wrap gap-1">
                 {Array.from({ length: tens }).map((_, i) => (
                   <TenBundle key={i} dotSize={8} />
@@ -490,7 +493,7 @@ export default function SlotPage() {
 
           {ones > 0 && (
             <div>
-              <p className="text-green-500 text-[10px] font-bold mb-0.5">一 × {ones}</p>
+              <p className="text-green-500 text-[0.625rem] font-bold mb-0.5">一 × {ones}</p>
               <div className="flex flex-wrap gap-1.5">
                 {Array.from({ length: ones }).map((_, i) => (
                   <div key={i} className="w-5 h-5 rounded-full bg-green-500 border-2 border-green-300" />
@@ -511,11 +514,11 @@ export default function SlotPage() {
           <button
             onClick={spinToAnswer}
             disabled={cleared}
-            className="text-gray-400 text-[10px] underline disabled:opacity-30"
+            className="text-gray-400 text-[0.625rem] underline disabled:opacity-30"
           >
             ヒント（こたえを見る）
           </button>
-          <div className="text-gray-400 text-[10px]">
+          <div className="text-gray-400 text-[0.625rem]">
             {totalCount.current > 0 && (
               <span>
                 せいかいりつ: {correctCount.current}/{totalCount.current} (

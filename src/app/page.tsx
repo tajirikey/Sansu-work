@@ -185,7 +185,7 @@ export default function Home() {
       <div className="pointer-events-none absolute -top-10 -right-24 w-80 h-80 rounded-full bg-amber-200/50 blur-3xl -z-10" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-sky-200/40 blur-3xl -z-10" />
 
-      <div className="max-w-xl md:max-w-2xl mx-auto px-4 pt-7 md:pt-12 pb-10">
+      <div className="max-w-xl md:max-w-lg mx-auto px-4 pt-7 pb-10">
         {/* Title */}
         <header className="flex items-center gap-3 mb-5">
           <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center rotate-[-6deg]" style={{ boxShadow: "var(--shadow-soft)" }}>
@@ -194,7 +194,7 @@ export default function Home() {
             </svg>
           </div>
           <div>
-            <h1 className="text-[28px] leading-none font-black tracking-wider text-ink">かずのへや</h1>
+            <h1 className="text-[1.75rem] leading-none font-black tracking-wider text-ink">かずのへや</h1>
             <p className="text-ink-soft text-xs mt-1.5">きょうも さんすうの ぼうけんへ！</p>
           </div>
         </header>
@@ -241,13 +241,13 @@ export default function Home() {
             return (
               <Link key={room.href} href={room.href} className="block">
                 <div className="surface pressable rounded-3xl p-2 pb-2.5 h-full">
-                  <div className="aspect-square rounded-[1.1rem] p-2.5 flex items-center justify-center" style={{ background: room.tint }}>
+                  <div className="aspect-square md:aspect-[6/5] rounded-[1.1rem] p-2.5 flex items-center justify-center" style={{ background: room.tint }}>
                     <Icon />
                   </div>
-                  <p className="mt-2 text-center font-black text-[13px] leading-tight tracking-wide" style={{ color: room.accent }}>
+                  <p className="mt-2 text-center font-black text-[0.8125rem] leading-tight tracking-wide" style={{ color: room.accent }}>
                     {room.title}
                   </p>
-                  <p className="text-center text-ink-soft text-[10px] leading-tight mt-0.5">{room.subtitle}</p>
+                  <p className="text-center text-ink-soft text-[0.625rem] leading-tight mt-0.5">{room.subtitle}</p>
                 </div>
               </Link>
             );

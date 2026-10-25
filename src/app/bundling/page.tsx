@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { rem, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import TenBundle from "@/components/TenBundle";
 import HundredPlate from "@/components/HundredPlate";
@@ -9,9 +10,8 @@ import RewardModal from "@/components/RewardModal";
 
 /* ─── constants ─── */
 const COLS = 10;
-const CELL = 36;
-const DOT_SIZE = 26;
-const DOT_R = DOT_SIZE / 2 + 6;
+const BASE_CELL = 36;
+const BASE_DOT = 26;
 
 /* ─── helpers ─── */
 interface DotState {
@@ -52,6 +52,10 @@ function numberToReading(n: number): string {
 
 /* ─── page ─── */
 export default function BundlingPage() {
+  const ui = useUiScale();
+  const CELL = BASE_CELL * ui;
+  const DOT_SIZE = BASE_DOT * ui;
+  const DOT_R = DOT_SIZE / 2 + 6 * ui;
   const [target, setTarget] = useState(() => randomTarget());
   const [dots, setDots] = useState<DotState[]>(() => makeDots(randomTarget()));
   const [bars, setBars] = useState<BarState[]>([]);
@@ -98,7 +102,7 @@ export default function BundlingPage() {
       if (Math.hypot(x - ctrX, y - ctrY) > DOT_R) return -1;
       return idx;
     },
-    [visible.length],
+    [visible.length, CELL, DOT_R],
   );
 
   const onPointerDown = useCallback(
@@ -305,7 +309,7 @@ export default function BundlingPage() {
           <div className="text-center flex-1">
             <p className="text-gray-500 text-xs">つくるかず</p>
             <div className="text-4xl font-bold text-green-700 leading-tight">{target}</div>
-            <p className="text-gray-400 text-[10px]">{numberToReading(target)}</p>
+            <p className="text-gray-400 text-[0.625rem]">{numberToReading(target)}</p>
           </div>
           <div className="flex gap-2 text-xs">
             {plates > 0 && (
@@ -330,7 +334,7 @@ export default function BundlingPage() {
         {/* 百 plates */}
         {plates > 0 && (
           <div className="bg-white/80 rounded-lg p-2 mb-2 border border-red-200 shadow-sm">
-            <p className="text-red-600 text-[10px] mb-1 font-bold">百のいた</p>
+            <p className="text-red-600 text-[0.625rem] mb-1 font-bold">百のいた</p>
             <div className="flex flex-wrap gap-1">
               {Array.from({ length: plates }).map((_, i) => (
                 <HundredPlate key={i} />
@@ -340,8 +344,8 @@ export default function BundlingPage() {
         )}
 
         {/* 十 bars */}
-        <div ref={bundleAreaRef} className="bg-white/80 rounded-lg p-2 mb-2 border border-blue-200 shadow-sm min-h-[56px]">
-          <p className="text-blue-600 text-[10px] mb-1 font-bold">
+        <div ref={bundleAreaRef} className="bg-white/80 rounded-lg p-2 mb-2 border border-blue-200 shadow-sm min-h-[3.5rem]">
+          <p className="text-blue-600 text-[0.625rem] mb-1 font-bold">
             十のたば
             {unbundledBars.length >= 10 && (
               <span className="text-green-700 ml-1">← 10こ えらんで まとめよう！</span>
@@ -354,14 +358,14 @@ export default function BundlingPage() {
               </button>
             ))}
             {unbundledBars.length === 0 && (
-              <p className="text-gray-400 text-[10px]">まるを まとめると ここに たばが できるよ</p>
+              <p className="text-gray-400 text-[0.625rem]">まるを まとめると ここに たばが できるよ</p>
             )}
           </div>
         </div>
 
         {/* 一 dots grid */}
         <div className="bg-white/80 rounded-lg p-2 mb-2 border border-green-200 shadow-sm flex-1">
-          <p className="text-green-600 text-[10px] mb-1 font-bold">
+          <p className="text-green-600 text-[0.625rem] mb-1 font-bold">
             一のまる
             {selectedCount > 0 && (
               <span className="text-green-700 ml-1">えらんだ: {selectedCount}こ</span>
@@ -445,8 +449,8 @@ export default function BundlingPage() {
                 key={i}
                 className="absolute rounded-full bg-green-500 border-2 border-green-300"
                 style={{
-                  width: flying ? 10 : DOT_SIZE,
-                  height: flying ? 10 : DOT_SIZE,
+                  width: flying ? 10 * ui : DOT_SIZE,
+                  height: flying ? 10 * ui : DOT_SIZE,
                   left: flying ? tx : pos.x,
                   top: flying ? ty : pos.y,
                   transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)",

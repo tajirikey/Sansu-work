@@ -237,7 +237,7 @@ export default function PairTenPage() {
               )}
             </div>
             <div className="text-center">
-              <p className="text-gray-400 text-[10px]">みつけた</p>
+              <p className="text-gray-400 text-[0.625rem]">みつけた</p>
               <p className="text-cyan-600 font-bold text-lg leading-tight">{pairsFound}</p>
             </div>
             <div className="text-right">
@@ -279,7 +279,7 @@ export default function PairTenPage() {
                   }`}
                 >
                   <span className="block text-xs">{l.label}</span>
-                  <span className="block text-[10px] opacity-70">{l.desc}</span>
+                  <span className="block text-[0.625rem] opacity-70">{l.desc}</span>
                 </button>
               ))}
             </div>
@@ -298,15 +298,15 @@ export default function PairTenPage() {
               <p className="text-cyan-700 font-bold text-xl mb-3">{message}</p>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p className="text-gray-400 text-[10px]">スコア</p>
+                  <p className="text-gray-400 text-[0.625rem]">スコア</p>
                   <p className="text-cyan-600 font-bold text-xl">{score}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-[10px]">ペア</p>
+                  <p className="text-gray-400 text-[0.625rem]">ペア</p>
                   <p className="text-cyan-600 font-bold text-xl">{pairsFound}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-[10px]">さいだいコンボ</p>
+                  <p className="text-gray-400 text-[0.625rem]">さいだいコンボ</p>
                   <p className="text-orange-500 font-bold text-xl">{bestCombo}</p>
                 </div>
               </div>
