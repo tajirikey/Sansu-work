@@ -1,9 +1,12 @@
+import { KIRBY_ITEMS } from "./kirby";
+
 export interface MinecraftItem {
   id: string;
   name: string;
   nameJa: string;
   rarity: "common" | "uncommon" | "rare" | "epic";
-  pixels: string[][]; // 8x8 pixel art grid with hex colors
+  pixels: string[][]; // square pixel art grid (8x8 or 16x16) with hex colors
+  series?: string; // collection tab, e.g. "kirby"
 }
 
 const _ = "";
@@ -2638,7 +2641,7 @@ const GENERATED: MinecraftItem[] = [
     ["aaaaaaaa", "a.cd.cda", "a.cd.cda", "aaaaaaaa", "aec..eda", "aec..eda", "aec..eda", "aaaaaaaa"]),
 ];
 
-const ALL_ITEMS = [...ITEMS, ...GENERATED];
+const ALL_ITEMS = [...ITEMS, ...GENERATED, ...KIRBY_ITEMS];
 
 const STORAGE_KEY = "sansu-collected-items";
 

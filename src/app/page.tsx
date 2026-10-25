@@ -155,87 +155,15 @@ function IconHissan() {
 }
 
 const rooms = [
-  {
-    href: "/bundling",
-    title: "まとめてみよう",
-    subtitle: "10こで たばにしよう",
-    icon: IconBundling,
-    bgColor: "from-green-50 to-emerald-50",
-    borderColor: "border-green-300",
-    accentColor: "text-green-700",
-  },
-  {
-    href: "/place-value",
-    title: "かずくんハウス",
-    subtitle: "百・十・一の へや",
-    icon: IconPlaceValue,
-    bgColor: "from-blue-50 to-sky-50",
-    borderColor: "border-blue-300",
-    accentColor: "text-blue-700",
-  },
-  {
-    href: "/number-line",
-    title: "かぞえよう",
-    subtitle: "たす・ひく れんしゅう",
-    icon: IconNumberLine,
-    bgColor: "from-purple-50 to-violet-50",
-    borderColor: "border-purple-300",
-    accentColor: "text-purple-700",
-  },
-  {
-    href: "/slot",
-    title: "かずをつくろう",
-    subtitle: "スロットで 3けた",
-    icon: IconSlot,
-    bgColor: "from-orange-50 to-amber-50",
-    borderColor: "border-orange-300",
-    accentColor: "text-orange-700",
-  },
-  {
-    href: "/sakuranbo",
-    title: "さくらんぼ",
-    subtitle: "わけて たして ひく",
-    icon: IconSakuranbo,
-    bgColor: "from-pink-50 to-rose-50",
-    borderColor: "border-pink-300",
-    accentColor: "text-pink-700",
-  },
-  {
-    href: "/pair-ten",
-    title: "ペアさがし",
-    subtitle: "あわせて 10の ペア",
-    icon: IconPairTen,
-    bgColor: "from-cyan-50 to-teal-50",
-    borderColor: "border-cyan-300",
-    accentColor: "text-cyan-700",
-  },
-  {
-    href: "/balance",
-    title: "すうじてんびん",
-    subtitle: "どちらが おおきい？",
-    icon: IconBalance,
-    bgColor: "from-indigo-50 to-blue-50",
-    borderColor: "border-indigo-300",
-    accentColor: "text-indigo-700",
-  },
-  {
-    href: "/shopping",
-    title: "おかいもの",
-    subtitle: "コインで おかいもの",
-    icon: IconShopping,
-    bgColor: "from-emerald-50 to-lime-50",
-    borderColor: "border-emerald-300",
-    accentColor: "text-emerald-700",
-  },
-  {
-    href: "/hissan",
-    title: "ひっさん",
-    subtitle: "ひっさんを かこう",
-    icon: IconHissan,
-    bgColor: "from-sky-50 to-cyan-50",
-    borderColor: "border-sky-300",
-    accentColor: "text-sky-700",
-  },
+  { href: "/bundling", title: "まとめてみよう", subtitle: "10こで たばに", icon: IconBundling, accent: "#22A55B", tint: "#E2F6E9" },
+  { href: "/place-value", title: "かずくんハウス", subtitle: "百・十・一の へや", icon: IconPlaceValue, accent: "#3B7BF0", tint: "#E3EDFF" },
+  { href: "/number-line", title: "かぞえよう", subtitle: "たす・ひく", icon: IconNumberLine, accent: "#8B5CF6", tint: "#EFE8FF" },
+  { href: "/slot", title: "かずをつくろう", subtitle: "スロットで 3けた", icon: IconSlot, accent: "#F2711C", tint: "#FFEEDF" },
+  { href: "/sakuranbo", title: "さくらんぼ", subtitle: "わけて たして", icon: IconSakuranbo, accent: "#E64593", tint: "#FDE7F1" },
+  { href: "/pair-ten", title: "ペアさがし", subtitle: "あわせて 10", icon: IconPairTen, accent: "#0AA5BF", tint: "#DDF5F9" },
+  { href: "/balance", title: "すうじてんびん", subtitle: "どちらが おおきい？", icon: IconBalance, accent: "#5B5FEF", tint: "#E8E9FF" },
+  { href: "/shopping", title: "おかいもの", subtitle: "コインで はらおう", icon: IconShopping, accent: "#0F9F72", tint: "#DDF5EC" },
+  { href: "/hissan", title: "ひっさん", subtitle: "ひっさんを かこう", icon: IconHissan, accent: "#0B8FD6", tint: "#DDF1FC" },
 ];
 
 export default function Home() {
@@ -246,50 +174,80 @@ export default function Home() {
     setCollected(getCollectedItems());
   }, []);
 
-  const recentItems = allItems.filter((item) => collected.includes(item.id)).slice(-3);
+  const owned = allItems.filter((item) => collected.includes(item.id));
+  const latest = owned.slice(-3).reverse();
+  const progress = allItems.length ? collected.length / allItems.length : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
-      {/* Header */}
-      <div className="text-center pt-6 pb-3 px-4">
-        <h1 className="text-3xl font-bold text-green-700 mb-0.5">かずのへや</h1>
-        <p className="text-gray-400 text-xs">さんすうの ぼうけんに でかけよう！</p>
-      </div>
+    <div className="relative min-h-[100dvh] overflow-hidden dream-dots">
+      {/* soft colour blobs */}
+      <div className="pointer-events-none absolute -top-24 -left-20 w-72 h-72 rounded-full bg-pink-200/50 blur-3xl -z-10" />
+      <div className="pointer-events-none absolute -top-10 -right-24 w-80 h-80 rounded-full bg-amber-200/50 blur-3xl -z-10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-sky-200/40 blur-3xl -z-10" />
 
-      {/* Collection bar */}
-      <Link href="/collection" className="block mx-3 mb-4">
-        <div className="bg-white/80 rounded-xl p-2.5 border border-amber-200 shadow-sm flex items-center justify-between">
+      <div className="max-w-xl md:max-w-2xl mx-auto px-4 pt-7 md:pt-12 pb-10">
+        {/* Title */}
+        <header className="flex items-center gap-3 mb-5">
+          <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center rotate-[-6deg]" style={{ boxShadow: "var(--shadow-soft)" }}>
+            <svg viewBox="0 0 24 24" className="w-7 h-7">
+              <path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" fill="#FFD43B" stroke="#F08C00" strokeWidth="1.5" strokeLinejoin="round" />
+            </svg>
+          </div>
           <div>
-            <p className="text-amber-700 font-bold text-xs">アイテムコレクション</p>
-            <p className="text-gray-400 text-[10px]">{collected.length} / {allItems.length} あつめた！</p>
+            <h1 className="text-[28px] leading-none font-black tracking-wider text-ink">かずのへや</h1>
+            <p className="text-ink-soft text-xs mt-1.5">きょうも さんすうの ぼうけんへ！</p>
           </div>
-          <div className="flex gap-1">
-            {recentItems.length > 0 ? (
-              recentItems.map((item) => <PixelItem key={item.id} item={item} size={28} />)
-            ) : (
-              <span className="text-gray-400 text-[10px]">ゲームで ゲット！</span>
-            )}
-          </div>
-        </div>
-      </Link>
+        </header>
 
-      {/* Game grid */}
-      <div className="px-3 pb-8">
-        <div className="grid grid-cols-3 gap-2.5">
+        {/* Collection */}
+        <Link href="/collection" className="block mb-6">
+          <div className="surface pressable p-3.5 flex items-center gap-3">
+            <div className="flex -space-x-3 flex-shrink-0">
+              {latest.length > 0 ? (
+                latest.map((item, i) => (
+                  <div key={item.id} className="w-12 h-12 rounded-2xl bg-amber-50 border-2 border-white flex items-center justify-center" style={{ zIndex: 3 - i }}>
+                    <PixelItem item={item} size={32} />
+                  </div>
+                ))
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-2xl">🎁</div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline justify-between">
+                <p className="text-ink font-black text-sm">アイテムずかん</p>
+                <p className="text-ink-soft text-xs font-bold tabular-nums">
+                  <span className="text-amber-600 text-sm">{collected.length}</span> / {allItems.length}
+                </p>
+              </div>
+              <div className="mt-2 h-2.5 rounded-full bg-amber-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-pink-400 transition-all duration-700"
+                  style={{ width: `${Math.max(progress * 100, collected.length ? 3 : 0)}%` }}
+                />
+              </div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 20 20" className="text-ink-faint flex-shrink-0" fill="none">
+              <path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </Link>
+
+        {/* Games */}
+        <p className="text-ink-faint text-xs font-bold tracking-[0.3em] mb-2.5 pl-1">あそぶ</p>
+        <div className="grid grid-cols-3 gap-3">
           {rooms.map((room) => {
             const Icon = room.icon;
             return (
               <Link key={room.href} href={room.href} className="block">
-                <div className={`bg-gradient-to-b ${room.bgColor} rounded-2xl border-2 ${room.borderColor} shadow-sm active:scale-95 transition-transform overflow-hidden`}>
-                  {/* Icon area */}
-                  <div className="aspect-square p-2.5 flex items-center justify-center">
+                <div className="surface pressable rounded-3xl p-2 pb-2.5 h-full">
+                  <div className="aspect-square rounded-[1.1rem] p-2.5 flex items-center justify-center" style={{ background: room.tint }}>
                     <Icon />
                   </div>
-                  {/* Label */}
-                  <div className="bg-white/70 px-2 py-1.5 text-center border-t border-white/50">
-                    <p className={`${room.accentColor} font-bold text-xs leading-tight`}>{room.title}</p>
-                    <p className="text-gray-400 text-[9px] leading-tight mt-0.5">{room.subtitle}</p>
-                  </div>
+                  <p className="mt-2 text-center font-black text-[13px] leading-tight tracking-wide" style={{ color: room.accent }}>
+                    {room.title}
+                  </p>
+                  <p className="text-center text-ink-soft text-[10px] leading-tight mt-0.5">{room.subtitle}</p>
                 </div>
               </Link>
             );

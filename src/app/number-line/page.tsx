@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -713,16 +713,13 @@ export default function NumberLinePage() {
   const ansO = problem.answer % 10;
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
+    <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-green-700 text-sm hover:underline">← もどる</Link>
-          <span className="text-purple-600 text-sm font-bold">かぞえよう</span>
-        </div>
+        <GameHeader title="かぞえよう" accent="#8B5CF6" />
 
         {/* ─── Big stats bar ─── */}
-        <div className="bg-white/90 border border-purple-200 rounded-2xl p-3 mb-2 shadow-sm">
+        <div className="surface rounded-2xl p-3 mb-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{difficulty <= 1 ? "⭐" : difficulty <= 4 ? "⭐⭐" : difficulty <= 7 ? "⭐⭐⭐" : "👑"}</span>

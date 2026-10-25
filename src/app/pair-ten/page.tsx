@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -220,20 +220,15 @@ export default function PairTenPage() {
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-b from-cyan-50 to-amber-50 p-3 flex flex-col touch-manipulation"
+      className="fixed inset-0 dream-dots bg-gradient-to-b from-cyan-50 to-amber-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
       <div className="max-w-lg mx-auto w-full flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1 flex-shrink-0">
-          <Link href="/" className="text-cyan-700 text-sm hover:underline">
-            &larr; もどる
-          </Link>
-          <span className="text-cyan-600 text-sm font-bold">ペアさがし</span>
-        </div>
+        <GameHeader title="ペアさがし" accent="#0AA5BF" />
 
         {/* Score / Timer bar */}
-        <div className="bg-white/90 border border-cyan-200 rounded-2xl p-2 mb-2 shadow-sm flex-shrink-0">
+        <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-cyan-700 font-bold text-lg leading-tight">{score}<span className="text-xs text-gray-400 ml-1">てん</span></p>
@@ -298,7 +293,7 @@ export default function PairTenPage() {
             className="flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer"
             onClick={() => setGameState("ready")}
           >
-            <div className="bg-white/90 rounded-2xl p-6 border-2 border-cyan-200 shadow-md text-center">
+            <div className="surface rounded-2xl p-6 text-center">
               <p className="text-4xl mb-3">🎉</p>
               <p className="text-cyan-700 font-bold text-xl mb-3">{message}</p>
               <div className="grid grid-cols-3 gap-3 text-center">

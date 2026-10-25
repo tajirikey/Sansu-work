@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import Link from "next/link";
+import GameHeader, { BackButton } from "@/components/GameHeader";
+import LevelSelect from "@/components/LevelSelect";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -394,27 +395,18 @@ export default function HissanPage() {
   // Level select screen
   if (!expected || !problem) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
+      <div className="fixed inset-0 dream-dots bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
         <div className="max-w-lg mx-auto w-full flex flex-col h-full">
-          <div className="flex items-center justify-between mb-1 flex-shrink-0">
-            <Link href="/" className="text-sky-700 text-sm hover:underline">&larr; もどる</Link>
-            <span className="text-sky-600 text-sm font-bold">ひっさんビルダー</span>
-          </div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <div className="text-center">
-              <p className="text-5xl mb-3">📝</p>
-              <h2 className="text-2xl font-bold text-sky-700 mb-2">ひっさんビルダー</h2>
-              <p className="text-gray-500 text-sm">しきを ひっさんの かたちに しよう！</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
-              {LEVELS.map((lv, i) => (
-                <button key={i} onClick={() => startWithLevel(i)} className="px-4 py-3 rounded-xl font-bold transition-all bg-white border-2 border-sky-200 text-sky-600 active:scale-95 hover:border-sky-400 shadow-sm">
-                  <span className="block text-sm">{lv.label}</span>
-                  <span className="block text-[10px] opacity-60 mt-0.5">{lv.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <GameHeader title="ひっさんビルダー" accent="#0B8FD6" />
+          <LevelSelect
+            emoji="📝"
+            title="ひっさんビルダー"
+            subtitle="しきを ひっさんの かたちに しよう！"
+            accent="#0B8FD6"
+            tint="#DDF1FC"
+            levels={LEVELS}
+            onSelect={startWithLevel}
+          />
         </div>
       </div>
     );
@@ -430,33 +422,33 @@ export default function HissanPage() {
   const activeAnswerGridCol = currentColInfo?.colGridIdx ?? -1;
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
+    <div className="fixed inset-0 dream-dots bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
       <div className="max-w-lg mx-auto w-full flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between flex-shrink-0">
-          <Link href="/" className="text-sky-700 text-base hover:underline">&larr; もどる</Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sky-600 font-bold text-base">{score}てん</span>
-            <span className="text-orange-500 font-bold text-base">{streak}れんぞく</span>
+        <div className="flex items-center justify-between gap-2 flex-shrink-0">
+          <BackButton />
+          <div className="flex items-center gap-1.5">
+            <span className="chip text-sky-600 tabular-nums">{score}<span className="text-[10px] text-ink-faint">てん</span></span>
+            <span className="chip text-orange-500 tabular-nums">{streak}<span className="text-[10px] text-ink-faint">れんぞく</span></span>
           </div>
           <div className="flex items-center gap-2">
             {phaseBuild && (
               <button
                 onClick={() => setShowGuide((g) => !g)}
-                className={`text-xs px-2 py-1 rounded-full border font-bold transition-all ${showGuide ? "bg-sky-100 border-sky-300 text-sky-600" : "bg-gray-100 border-gray-300 text-gray-400"}`}
+                className={`chip text-xs transition-all ${showGuide ? "!bg-sky-100 text-sky-600" : "text-ink-faint"}`}
               >
                 ガイド{showGuide ? "ON" : "OFF"}
               </button>
             )}
-            <button onClick={() => { setProblem(null); setPhase("select"); }} className="text-gray-400 text-xs underline">{LEVELS[levelIdx].label}</button>
+            <button onClick={() => { setProblem(null); setPhase("select"); }} className="chip text-xs text-ink-soft">{LEVELS[levelIdx].label}</button>
           </div>
         </div>
 
         {/* All content packed together in center */}
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-2">
           {/* Horizontal equation */}
-          <div className="bg-white/90 border-2 border-sky-200 rounded-2xl px-6 py-2 shadow-md text-center flex-shrink-0">
-            <p className="text-3xl font-black text-sky-700 tracking-wider">
+          <div className="surface px-7 py-2.5 text-center flex-shrink-0">
+            <p className="text-3xl font-black text-ink tracking-wider tabular-nums">
               {problem.a} {problem.op} {problem.b} = <span className="text-sky-300">？</span>
             </p>
           </div>
@@ -625,7 +617,7 @@ export default function HissanPage() {
                     className={`h-14 rounded-2xl font-black text-2xl transition-all active:scale-90 select-none touch-manipulation disabled:opacity-30
                       ${n === "+" || n === "−"
                         ? "bg-orange-100 border-2 border-orange-300 text-orange-600"
-                        : "bg-white border-2 border-sky-200 text-sky-700 shadow-sm"
+                        : "surface pressable !rounded-2xl text-sky-700"
                       }
                     `}
                   >

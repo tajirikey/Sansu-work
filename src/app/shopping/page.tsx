@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
+import LevelSelect from "@/components/LevelSelect";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -249,46 +250,27 @@ export default function ShoppingPage() {
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-b from-emerald-50 to-lime-50 p-3 flex flex-col touch-manipulation"
+      className="fixed inset-0 dream-dots bg-gradient-to-b from-emerald-50 to-lime-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
       <div className="max-w-lg mx-auto w-full flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1 flex-shrink-0">
-          <Link href="/" className="text-emerald-700 text-sm hover:underline">
-            &larr; もどる
-          </Link>
-          <span className="text-emerald-600 text-sm font-bold">おかいものゲーム</span>
-        </div>
+        <GameHeader title="おかいものゲーム" accent="#0F9F72" />
 
         {phase === "select" ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <div className="text-center">
-              <p className="text-5xl mb-3">🛒</p>
-              <h2 className="text-2xl font-bold text-emerald-700 mb-2">おかいものゲーム</h2>
-              <p className="text-gray-500 text-sm">コインをえらんで おかいものしよう</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
-              {SHOP_LEVELS.map((lv, i) => (
-                <button
-                  key={i}
-                  onClick={() => startWithLevel(i)}
-                  className={`px-4 py-3 rounded-xl font-bold transition-all bg-white border-2 active:scale-95 shadow-sm ${
-                    i === 3
-                      ? "border-yellow-300 text-yellow-700 hover:border-yellow-400"
-                      : "border-emerald-200 text-emerald-600 hover:border-emerald-400"
-                  }`}
-                >
-                  <span className="block text-sm">{lv.label}</span>
-                  <span className="block text-[10px] opacity-60 mt-0.5">{lv.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <LevelSelect
+            emoji="🛒"
+            title="おかいものゲーム"
+            subtitle="コインを えらんで おかいものしよう"
+            accent="#0F9F72"
+            tint="#DDF5EC"
+            levels={SHOP_LEVELS}
+            onSelect={startWithLevel}
+          />
         ) : (
           <>
             {/* Stats bar */}
-            <div className="bg-white/90 border border-emerald-200 rounded-2xl p-2 mb-1 shadow-sm flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               <div className="flex items-center justify-between text-center">
                 <div>
                   <p className="text-gray-400 text-[10px]">スコア</p>
@@ -308,7 +290,7 @@ export default function ShoppingPage() {
             </div>
 
             {/* Product card - compact */}
-            <div className="bg-white/90 border-2 border-emerald-200 rounded-2xl p-2 mb-1 shadow-md flex items-center gap-3 flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex items-center gap-3 flex-shrink-0">
               <p className="text-4xl">{product.emoji}</p>
               <div className="flex-1">
                 <p className="text-emerald-700 font-bold text-sm">{product.name}</p>
@@ -319,7 +301,7 @@ export default function ShoppingPage() {
             </div>
 
             {/* Coins area */}
-            <div className="bg-white/80 border border-gray-200 rounded-2xl p-2 mb-1 shadow-sm flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               {is50Mode && (
                 <p className="text-center text-[10px] text-yellow-600 font-bold mb-1">
                   50えんだまを かならず つかおう！
@@ -360,7 +342,7 @@ export default function ShoppingPage() {
             </div>
 
             {/* Total & pay */}
-            <div className="bg-white/90 border border-emerald-200 rounded-2xl p-2 mb-1 shadow-sm flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-[10px]">いま いれたおかね</p>

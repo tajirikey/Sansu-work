@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 import TenBundle from "@/components/TenBundle";
@@ -372,19 +372,13 @@ export default function SlotPage() {
   }, [question, cleared]);
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-orange-50 to-amber-50 p-3 flex flex-col">
+    <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-orange-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         {/* header */}
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-green-700 text-sm hover:underline">← もどる</Link>
-          <div className="flex items-center gap-3">
-            <span className="text-orange-600 text-sm font-bold">かずをつくろう</span>
-            <span className="text-orange-500 text-xs">{streak}🔥</span>
-          </div>
-        </div>
+        <GameHeader title="かずをつくろう" accent="#F2711C" right={<span className="chip text-orange-500">{streak}🔥</span>} />
 
         {/* question */}
-        <div className="bg-white/80 border border-orange-200 rounded-xl p-3 mb-3 shadow-sm">
+        <div className="surface rounded-xl p-3 mb-3">
           <QuestionDisplay question={question} />
         </div>
 
@@ -469,7 +463,7 @@ export default function SlotPage() {
         </div>
 
         {/* visual */}
-        <div className="bg-white/80 border border-gray-200 rounded-xl p-2.5 shadow-sm flex-1 overflow-y-auto">
+        <div className="surface rounded-xl p-2.5 flex-1 overflow-y-auto">
           <p className="text-gray-400 text-[10px] font-bold mb-1.5">いまの かずのかたち</p>
 
           {hundreds > 0 && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError, playBundle } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -654,20 +654,13 @@ export default function SakuranboPage() {
   const inputDisabled = phase === "correct";
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-pink-50 to-amber-50 p-3 flex flex-col">
+    <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-pink-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-pink-700 text-sm hover:underline">
-            &larr; もどる
-          </Link>
-          <span className="text-pink-600 text-sm font-bold">
-            さくらんぼけいさん
-          </span>
-        </div>
+        <GameHeader title="さくらんぼけいさん" accent="#E64593" />
 
         {/* Stats bar */}
-        <div className="bg-white/90 border border-pink-200 rounded-2xl p-3 mb-2 shadow-sm">
+        <div className="surface rounded-2xl p-3 mb-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">
@@ -728,7 +721,7 @@ export default function SakuranboPage() {
         </div>
 
         {/* ═══ Problem + Cherry Branch ═══ */}
-        <div className="bg-white/80 border-2 border-pink-200 rounded-2xl p-4 shadow-sm flex-1 flex flex-col gap-3">
+        <div className="surface rounded-2xl p-4 flex-1 flex flex-col gap-3">
           {/* Problem row: tappable operands */}
           <div className="flex items-center justify-center gap-2">
             {/* Number A */}

@@ -10,26 +10,28 @@ interface RewardModalProps {
   onClose: () => void;
 }
 
-const RARITY_COLORS = {
-  common: "text-gray-500",
-  uncommon: "text-green-600",
-  rare: "text-blue-600",
-  epic: "text-purple-600",
-};
+export const RARITY = {
+  common: { label: "コモン", color: "#6E6A8F", glow: "#E9E6F2", stars: 1 },
+  uncommon: { label: "アンコモン", color: "#1F9D55", glow: "#C9F2D9", stars: 2 },
+  rare: { label: "レア", color: "#2F6FE4", glow: "#CFE0FF", stars: 3 },
+  epic: { label: "エピック", color: "#9B3FE0", glow: "#EBD5FF", stars: 4 },
+} as const;
 
-const RARITY_BG = {
-  common: "from-gray-50 to-gray-100 border-gray-300",
-  uncommon: "from-green-50 to-green-100 border-green-300",
-  rare: "from-blue-50 to-blue-100 border-blue-300",
-  epic: "from-purple-50 to-purple-100 border-purple-300",
-};
+const SPARKS = [
+  { x: "12%", y: "18%", d: "0s", s: 14 },
+  { x: "84%", y: "14%", d: "0.3s", s: 10 },
+  { x: "90%", y: "62%", d: "0.6s", s: 16 },
+  { x: "8%", y: "70%", d: "0.9s", s: 12 },
+  { x: "50%", y: "4%", d: "0.45s", s: 10 },
+];
 
-const RARITY_LABEL = {
-  common: "コモン",
-  uncommon: "アンコモン",
-  rare: "レア",
-  epic: "エピック",
-};
+function Spark({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20">
+      <path d="M10 0c.8 5.6 3.6 8.4 10 10-6.4 1.6-9.2 4.4-10 10-.8-5.6-3.6-8.4-10-10C6.4 8.4 9.2 5.6 10 0z" fill={color} />
+    </svg>
+  );
+}
 
 export default function RewardModal({ show, onClose }: RewardModalProps) {
   const [item, setItem] = useState<MinecraftItem | null>(null);
@@ -52,43 +54,61 @@ export default function RewardModal({ show, onClose }: RewardModalProps) {
 
   if (!show) return null;
 
+  const r = item ? RARITY[item.rarity] : RARITY.common;
+
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-[#2d2a4a]/55 backdrop-blur-sm flex items-center justify-center z-50 p-6"
       onClick={!item && revealed ? onClose : undefined}
     >
-      <div
-        className={`bg-gradient-to-b ${item ? RARITY_BG[item.rarity] : "from-gray-50 to-gray-100 border-gray-300"} rounded-2xl p-8 max-w-sm w-full text-center border-2 shadow-2xl`}
-      >
+      <div className="surface relative w-full max-w-sm px-6 pt-8 pb-6 text-center overflow-hidden">
         {!revealed ? (
-          <div className="py-12">
-            <div className="text-6xl animate-bounce">📦</div>
-            <p className="text-amber-600 mt-4 text-lg font-bold">アイテムゲット！</p>
+          <div className="py-10">
+            <div className="relative mx-auto w-28 h-28 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-amber-200/70 animate-ping" />
+              <div className="relative text-6xl animate-bounce">🎁</div>
+            </div>
+            <p className="text-amber-600 mt-5 text-lg font-black tracking-wider">なにが でるかな？</p>
           </div>
         ) : item ? (
           <div className="animate-bounce-in">
-            <p className="text-amber-600 text-sm mb-2">★ アイテムゲット！ ★</p>
-            <div className="flex justify-center my-6">
-              <div className="animate-float">
-                <PixelItem item={item} size={120} />
+            {SPARKS.map((p, i) => (
+              <span key={i} className="absolute animate-sparkle" style={{ left: p.x, top: p.y, animationDelay: p.d }}>
+                <Spark size={p.s} color={i % 2 ? "#FFD43B" : r.color} />
+              </span>
+            ))}
+
+            <p className="text-amber-500 text-xs font-black tracking-[0.3em]">アイテム ゲット！</p>
+
+            <div className="relative my-5 mx-auto w-44 h-44 flex items-center justify-center">
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{ background: `radial-gradient(circle, ${r.glow} 0%, ${r.glow}00 70%)` }}
+              />
+              <div className="relative animate-float">
+                <PixelItem item={item} size={128} />
               </div>
             </div>
-            <h3 className="text-gray-800 text-2xl font-bold mb-1">{item.nameJa}</h3>
-            <p className={`text-sm font-bold ${RARITY_COLORS[item.rarity]}`}>
-              {RARITY_LABEL[item.rarity]}
-            </p>
+
+            <h3 className="text-ink text-2xl font-black tracking-wide">{item.nameJa}</h3>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1" style={{ background: r.glow }}>
+              <span className="text-xs" style={{ color: r.color }}>{"★".repeat(r.stars)}</span>
+              <span className="text-xs font-black" style={{ color: r.color }}>{r.label}</span>
+            </div>
+
             <button
               onClick={onClose}
-              className="mt-6 bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors active:scale-95"
+              className="mc-btn block w-full mt-6"
+              style={{ background: "linear-gradient(180deg,#FFB547 0%,#FF9425 100%)", boxShadow: "0 4px 0 0 #D9720F, inset 0 1px 0 rgba(255,255,255,.35)" }}
             >
               やったね！
             </button>
           </div>
         ) : (
           <div className="py-8">
-            <p className="text-amber-600 text-xl font-bold mb-2">🎉 コンプリート！ 🎉</p>
-            <p className="text-gray-700">ぜんぶのアイテムをあつめたよ！</p>
-            <p className="text-gray-400 text-sm mt-4 animate-pulse">タップして とじる</p>
+            <p className="text-amber-600 text-xl font-black mb-2">🎉 コンプリート！ 🎉</p>
+            <p className="text-ink-soft">ぜんぶの アイテムを あつめたよ！</p>
+            <p className="text-ink-faint text-sm mt-4 animate-pulse">タップして とじる</p>
           </div>
         )}
       </div>

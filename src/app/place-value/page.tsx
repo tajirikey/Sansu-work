@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import TenBundle from "@/components/TenBundle";
 import HundredPlate from "@/components/HundredPlate";
 import { playPop, playBundle, playSuccess, playError } from "@/lib/sounds";
@@ -159,14 +159,9 @@ export default function PlaceValuePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 p-4 pb-32">
+    <div className="relative dream-dots min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 p-4 pb-32">
       <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/" className="text-green-700 text-sm hover:underline">
-            ← もどる
-          </Link>
-          <span className="text-blue-600 text-sm font-bold">かずくんハウス</span>
-        </div>
+        <GameHeader title="かずくんハウス" accent="#3B7BF0" />
 
         {/* target */}
         <div className="text-center mb-3">
@@ -193,7 +188,7 @@ export default function PlaceValuePage() {
         )}
 
         {/* message */}
-        <div className="bg-white/80 border border-gray-200 shadow-sm rounded-xl p-3 mb-4 text-center">
+        <div className="surface rounded-xl p-3 mb-4 text-center">
           <p className="text-gray-800 text-sm">{message}</p>
         </div>
 

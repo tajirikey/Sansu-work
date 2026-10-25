@@ -6,10 +6,12 @@ interface PixelItemProps {
   item: MinecraftItem;
   size?: number;
   className?: string;
+  /** paint every pixel this colour (mystery silhouette) */
+  silhouette?: string;
 }
 
-export default function PixelItem({ item, size = 64, className = "" }: PixelItemProps) {
-  const cellSize = size / 8;
+export default function PixelItem({ item, size = 64, className = "", silhouette }: PixelItemProps) {
+  const cellSize = size / item.pixels.length;
 
   return (
     <div className={`inline-block ${className}`} style={{ width: size, height: size }}>
@@ -23,7 +25,7 @@ export default function PixelItem({ item, size = 64, className = "" }: PixelItem
                 y={y * cellSize}
                 width={cellSize + 0.5}
                 height={cellSize + 0.5}
-                fill={color}
+                fill={silhouette ?? color}
               />
             ) : null
           )

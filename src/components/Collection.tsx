@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getAllItems, getCollectedItems, resetCollection, MinecraftItem } from "@/lib/rewards";
 import PixelItem from "./PixelItem";
-import Link from "next/link";
+import GameHeader from "./GameHeader";
+import { RARITY } from "./RewardModal";
 
 /* ─── Mirrored PixelItem for back face ─── */
 function PixelItemMirrored({ item, size }: { item: MinecraftItem; size: number }) {
-  const cellSize = size / 8;
+  const n = item.pixels.length;
+  const cellSize = size / n;
   return (
     <div className="inline-block" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -16,7 +18,7 @@ function PixelItemMirrored({ item, size }: { item: MinecraftItem; size: number }
             color ? (
               <rect
                 key={`${x}-${y}`}
-                x={(7 - x) * cellSize}
+                x={(n - 1 - x) * cellSize}
                 y={y * cellSize}
                 width={cellSize + 0.5}
                 height={cellSize + 0.5}
@@ -298,10 +300,18 @@ function ItemViewer({ item, onClose }: { item: MinecraftItem; onClose: () => voi
 }
 
 /* ─── Collection Page ─── */
+const TABS = [
+  { key: "all", label: "ぜんぶ" },
+  { key: "kirby", label: "カービィ" },
+  { key: "other", label: "そのほか" },
+] as const;
+type TabKey = (typeof TABS)[number]["key"];
+
 export default function Collection() {
   const [collected, setCollected] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MinecraftItem | null>(null);
+  const [tab, setTab] = useState<TabKey>("all");
   const allItems = getAllItems();
 
   useEffect(() => {
@@ -314,73 +324,103 @@ export default function Collection() {
     setShowConfirm(false);
   };
 
+  const inTab = (item: MinecraftItem) =>
+    tab === "all" || (tab === "kirby" ? item.series === "kirby" : item.series !== "kirby");
+  const items = allItems.filter(inTab);
+  const owned = items.filter((item) => collected.includes(item.id)).length;
+  const progress = items.length ? owned / items.length : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 p-4 pb-24">
-      <div className="max-w-lg mx-auto">
-        <Link href="/" className="text-green-700 text-sm mb-4 inline-block hover:underline">
-          ← もどる
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-800 text-center mb-2">
-          アイテムコレクション
-        </h1>
-        <p className="text-center text-gray-500 mb-4">
-          {collected.length} / {allItems.length} あつめた！
-        </p>
-        <div className="bg-white/80 rounded-xl p-2 shadow-sm border border-gray-200">
-          <div className="grid grid-cols-4 gap-2">
-            {allItems.map((item) => {
-              const isCollected = collected.includes(item.id);
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => isCollected && setSelectedItem(item)}
-                  disabled={!isCollected}
-                  className={`aspect-square rounded-lg flex flex-col items-center justify-center p-2 transition-all active:scale-90 ${
-                    isCollected
-                      ? "bg-amber-50 border border-amber-200 hover:bg-amber-100 cursor-pointer"
-                      : "bg-gray-100 border border-gray-200 cursor-default"
-                  }`}
-                >
-                  {isCollected ? (
-                    <>
-                      <PixelItem item={item} size={48} />
-                      <span className="text-[10px] text-gray-600 mt-1 text-center leading-tight">
-                        {item.nameJa}
-                      </span>
-                    </>
-                  ) : (
-                    <div className="text-3xl text-gray-300">？</div>
-                  )}
-                </button>
-              );
-            })}
+    <div className="relative min-h-[100dvh] dream-dots pb-16">
+      <div className="max-w-xl mx-auto px-4 pt-4">
+        <GameHeader title="アイテムずかん" accent="#F59F00" />
+
+        {/* Progress */}
+        <div className="surface p-4 mb-3">
+          <div className="flex items-end justify-between mb-2">
+            <p className="text-ink-soft text-xs font-bold">あつめた かず</p>
+            <p className="text-ink font-black tabular-nums">
+              <span className="text-3xl text-amber-500">{owned}</span>
+              <span className="text-ink-faint text-base"> / {items.length}</span>
+            </p>
+          </div>
+          <div className="h-3 rounded-full bg-amber-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-pink-400 transition-all duration-700"
+              style={{ width: `${Math.max(progress * 100, owned ? 2 : 0)}%` }}
+            />
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 mb-3 rounded-2xl bg-white/70 border border-[var(--line)]">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex-1 py-2 rounded-xl text-sm font-black transition-all ${
+                tab === t.key ? "bg-white text-ink shadow-[var(--shadow-soft)]" : "text-ink-faint"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+          {items.map((item) => {
+            const isCollected = collected.includes(item.id);
+            const r = RARITY[item.rarity];
+            return (
+              <button
+                key={item.id}
+                onClick={() => isCollected && setSelectedItem(item)}
+                disabled={!isCollected}
+                className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center p-1.5 transition-transform ${
+                  isCollected ? "surface active:scale-90" : "bg-white/50 border border-dashed border-[var(--line)]"
+                }`}
+              >
+                {isCollected ? (
+                  <>
+                    <PixelItem item={item} size={44} />
+                    <span className="text-[9px] text-ink-soft mt-1 text-center leading-tight line-clamp-1 w-full">
+                      {item.nameJa}
+                    </span>
+                    <span className="absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: r.color }} />
+                  </>
+                ) : (
+                  <PixelItem item={item} size={40} silhouette="#E4DFD6" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Reset */}
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           {!showConfirm ? (
             <button
               onClick={() => setShowConfirm(true)}
-              className="text-gray-400 text-xs underline hover:text-gray-600"
+              className="text-ink-faint text-xs underline"
             >
               コレクションをリセット
             </button>
           ) : (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-red-700 text-sm font-bold mb-3">
+            <div className="surface p-4">
+              <p className="text-red-600 text-sm font-bold mb-3">
                 ほんとうに ぜんぶ けしていい？
               </p>
               <div className="flex justify-center gap-3">
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 text-sm font-bold active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-ink text-sm font-bold active:scale-95"
                 >
                   やめる
                 </button>
                 <button
                   onClick={handleReset}
-                  className="px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-bold active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-bold active:scale-95"
                 >
                   リセットする
                 </button>

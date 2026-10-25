@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
+import LevelSelect from "@/components/LevelSelect";
 import { playPop, playSuccess, playError } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
 
@@ -146,45 +147,30 @@ export default function BalancePage() {
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-b from-indigo-50 to-purple-50 p-3 flex flex-col touch-manipulation"
+      className="fixed inset-0 dream-dots bg-gradient-to-b from-indigo-50 to-purple-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
       <div className="max-w-lg mx-auto w-full flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1 flex-shrink-0">
-          <Link href="/" className="text-indigo-700 text-sm hover:underline">
-            &larr; もどる
-          </Link>
-          <span className="text-indigo-600 text-sm font-bold">すうじてんびん</span>
-        </div>
+        <GameHeader title="すうじてんびん" accent="#5B5FEF" />
 
         {phase === "select" ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <div className="text-center">
-              <p className="text-5xl mb-3">⚖️</p>
-              <h2 className="text-2xl font-bold text-indigo-700 mb-2">すうじてんびん</h2>
-              <p className="text-gray-500 text-sm">おおきい かずを タップしよう！</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
-              {LEVELS.map((lv, i) => (
-                <button
-                  key={i}
-                  onClick={() => startWithLevel(i)}
-                  className="px-4 py-3 rounded-xl font-bold transition-all bg-white border-2 border-indigo-200 text-indigo-600 active:scale-95 hover:border-indigo-400 shadow-sm"
-                >
-                  <span className="block text-base">{lv.label}</span>
-                  <span className="block text-[10px] opacity-60 mt-0.5">{lv.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <LevelSelect
+            emoji="⚖️"
+            title="すうじてんびん"
+            subtitle="おおきい かずを タップしよう！"
+            accent="#5B5FEF"
+            tint="#E8E9FF"
+            levels={LEVELS}
+            onSelect={startWithLevel}
+          />
         ) : (
           <div
             className="flex-1 flex flex-col min-h-0"
             onClick={handleScreenTap}
           >
             {/* Stats bar */}
-            <div className="bg-white/90 border border-indigo-200 rounded-2xl p-2 mb-2 shadow-sm flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0">
               <div className="flex items-center justify-between text-center">
                 <div>
                   <p className="text-gray-400 text-[10px]">スコア</p>
@@ -305,7 +291,7 @@ export default function BalancePage() {
               {/* Dot visualization (shown after answer) */}
               {showDots && (
                 <div className="w-full grid grid-cols-2 gap-3 mt-4 animate-[fadeIn_0.3s_ease-out] flex-shrink-0">
-                  <div className="bg-white/80 rounded-xl p-2 border border-indigo-200 text-center">
+                  <div className="surface rounded-xl p-2 text-center">
                     <DotVis n={problem.left} />
                     <p className="text-[10px] text-gray-400 mt-1">
                       {decompose(problem.left).hundreds > 0 && <span className="text-red-400">●百 </span>}
@@ -313,7 +299,7 @@ export default function BalancePage() {
                       <span className="text-green-400">●一</span>
                     </p>
                   </div>
-                  <div className="bg-white/80 rounded-xl p-2 border border-indigo-200 text-center">
+                  <div className="surface rounded-xl p-2 text-center">
                     <DotVis n={problem.right} />
                     <p className="text-[10px] text-gray-400 mt-1">
                       {decompose(problem.right).hundreds > 0 && <span className="text-red-400">●百 </span>}

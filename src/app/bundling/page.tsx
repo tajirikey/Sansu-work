@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import Link from "next/link";
+import GameHeader from "@/components/GameHeader";
 import TenBundle from "@/components/TenBundle";
 import HundredPlate from "@/components/HundredPlate";
 import { playPop, playBundle, playSuccess, playError } from "@/lib/sounds";
@@ -295,13 +295,10 @@ export default function BundlingPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-green-50 to-amber-50 p-3 flex flex-col">
+    <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-green-50 to-amber-50 p-3 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
         {/* header */}
-        <div className="flex items-center justify-between mb-2">
-          <Link href="/" className="text-green-700 text-sm hover:underline">← もどる</Link>
-          <span className="text-green-600 text-sm font-bold">まとめてみよう</span>
-        </div>
+        <GameHeader title="まとめてみよう" accent="#22A55B" />
 
         {/* target + counters row */}
         <div className="flex items-center justify-between mb-2">
