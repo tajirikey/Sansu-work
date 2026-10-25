@@ -151,7 +151,7 @@ export default function BalancePage() {
       className="fixed inset-0 dream-dots bg-gradient-to-b from-indigo-50 to-purple-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
-      <div className="max-w-lg mx-auto w-full flex flex-col h-full">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col h-full">
         {/* Header */}
         <GameHeader title="すうじてんびん" accent="#5B5FEF" />
 
@@ -171,7 +171,7 @@ export default function BalancePage() {
             onClick={handleScreenTap}
           >
             {/* Stats bar */}
-            <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0 land:max-w-3xl land:w-full land:mx-auto">
               <div className="flex items-center justify-between text-center">
                 <div>
                   <p className="text-gray-400 text-[0.625rem]">スコア</p>
@@ -218,7 +218,7 @@ export default function BalancePage() {
 
             {/* Balance: numbers are tappable */}
             <div className="flex-1 flex flex-col items-center justify-center min-h-0">
-              <div className="relative w-full max-w-sm flex-shrink-0 md:[zoom:1.3]">
+              <div className="relative w-full max-w-sm flex-shrink-0 md:[zoom:1.3] land:[zoom:1.55] land:mt-16">
                 {/* Fulcrum */}
                 <div className="flex justify-center">
                   <div className="relative" style={{ width: rem(280) }}>
@@ -291,7 +291,7 @@ export default function BalancePage() {
 
               {/* Dot visualization (shown after answer) */}
               {showDots && (
-                <div className="w-full grid grid-cols-2 gap-3 mt-4 animate-[fadeIn_0.3s_ease-out] flex-shrink-0">
+                <div className="w-full land:max-w-3xl grid grid-cols-2 gap-3 mt-4 animate-[fadeIn_0.3s_ease-out] flex-shrink-0">
                   <div className="surface rounded-xl p-2 text-center">
                     <DotVis n={problem.left} />
                     <p className="text-[0.625rem] text-gray-400 mt-1">

@@ -216,19 +216,19 @@ export default function PairTenPage() {
   }, [gameState, cards, selected, combo, lv]);
 
   // Grid columns: 4 for 8 cards, 4 for 12 (3 rows), 5 for 10
-  const gridCols = lv.cardCount === 10 ? "grid-cols-5" : "grid-cols-4";
+  const gridCols = lv.cardCount === 10 ? "grid-cols-5" : lv.cardCount === 12 ? "grid-cols-4 land:grid-cols-6" : "grid-cols-4";
 
   return (
     <div
       className="fixed inset-0 dream-dots bg-gradient-to-b from-cyan-50 to-amber-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
-      <div className="max-w-lg mx-auto w-full flex flex-col h-full">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col h-full">
         {/* Header */}
         <GameHeader title="ペアさがし" accent="#0AA5BF" />
 
         {/* Score / Timer bar */}
-        <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0">
+        <div className="surface rounded-2xl p-2 mb-2 flex-shrink-0 land:max-w-4xl land:w-full land:mx-auto">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-cyan-700 font-bold text-lg leading-tight">{score}<span className="text-xs text-gray-400 ml-1">てん</span></p>
@@ -267,7 +267,7 @@ export default function PairTenPage() {
             </div>
 
             {/* Level selector */}
-            <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
+            <div className="grid grid-cols-3 land:grid-cols-5 gap-2 w-full max-w-xs land:max-w-3xl">
               {LEVELS.map((l, i) => (
                 <button
                   key={i}
@@ -316,18 +316,18 @@ export default function PairTenPage() {
         ) : (
           /* Game board */
           <div className="flex-1 flex flex-col items-center justify-center gap-2 min-h-0">
-            <p className="text-center text-sm text-gray-500 font-bold flex-shrink-0">
+            <p className="text-center text-sm land:text-lg text-gray-500 font-bold flex-shrink-0">
               あわせて <span className="text-cyan-600 text-lg">{lv.target}</span> になる ペアを タップ！
             </p>
 
-            <div className={`grid ${gridCols} gap-2 w-full max-w-sm flex-shrink-0`}>
+            <div className={`grid ${gridCols} gap-2 land:gap-4 w-full max-w-sm land:max-w-4xl flex-shrink-0`}>
               {cards.map((card) => (
                 <button
                   key={card.id}
                   onClick={() => handleCardTap(card.id)}
                   disabled={card.matched}
                   className={`aspect-[4/3] rounded-2xl font-black transition-all select-none touch-manipulation
-                    ${card.value < 0 ? "text-3xl" : "text-4xl"}
+                    ${card.value < 0 ? "text-3xl land:text-5xl" : "text-4xl land:text-6xl"}
                     ${card.matched
                       ? "opacity-0 scale-75"
                       : card.wrong

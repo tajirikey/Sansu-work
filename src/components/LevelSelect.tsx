@@ -17,7 +17,7 @@ interface LevelSelectProps {
 /** Shared "choose a level" screen used by games with difficulty levels. */
 export default function LevelSelect({ emoji, title, subtitle, accent, tint, levels, onSelect }: LevelSelectProps) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 px-2">
+    <div className="flex-1 flex flex-col land:flex-row items-center justify-center gap-6 land:gap-16 px-2">
       <div className="text-center">
         <div
           className="mx-auto mb-4 w-24 h-24 rounded-[2rem] flex items-center justify-center text-5xl rotate-[-4deg]"
@@ -29,14 +29,14 @@ export default function LevelSelect({ emoji, title, subtitle, accent, tint, leve
         <p className="text-ink-soft text-sm mt-1.5">{subtitle}</p>
       </div>
 
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm land:max-w-xl">
         <p className="text-ink-faint text-xs font-bold text-center mb-2 tracking-widest">レベルを えらぼう</p>
         <div className="grid grid-cols-2 gap-3">
           {levels.map((lv, i) => (
             <button
               key={i}
               onClick={() => onSelect(i)}
-              className="surface pressable text-left px-4 py-3.5 flex items-center gap-3"
+              className="surface pressable text-left px-4 py-3.5 land:py-5 flex items-center gap-3"
             >
               <span
                 className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"

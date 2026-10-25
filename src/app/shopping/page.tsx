@@ -253,7 +253,7 @@ export default function ShoppingPage() {
       className="fixed inset-0 dream-dots bg-gradient-to-b from-emerald-50 to-lime-50 p-3 flex flex-col touch-manipulation"
       style={{ overflow: "hidden" }}
     >
-      <div className="max-w-lg mx-auto w-full flex flex-col h-full">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col h-full">
         {/* Header */}
         <GameHeader title="おかいものゲーム" accent="#0F9F72" />
 
@@ -270,9 +270,9 @@ export default function ShoppingPage() {
         ) : (
           <>
             {/* Cards (enlarged on tablets) */}
-            <div className="flex-shrink-0 md:[zoom:1.25] md:mt-4">
+            <div className="flex-shrink-0 md:[zoom:1.25] md:mt-4 land:[zoom:1.3] land:mt-1 land:grid land:grid-cols-2 land:gap-x-3 land:w-full land:max-w-5xl land:mx-auto">
             {/* Stats bar */}
-            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0 land:col-span-2">
               <div className="flex items-center justify-between text-center">
                 <div>
                   <p className="text-gray-400 text-[0.625rem]">スコア</p>
@@ -292,24 +292,24 @@ export default function ShoppingPage() {
             </div>
 
             {/* Product card - compact */}
-            <div className="surface rounded-2xl p-2 mb-1 flex items-center gap-3 flex-shrink-0">
-              <p className="text-4xl">{product.emoji}</p>
+            <div className="surface rounded-2xl p-2 land:p-5 mb-1 flex items-center gap-3 land:gap-5 flex-shrink-0">
+              <p className="text-4xl land:text-7xl">{product.emoji}</p>
               <div className="flex-1">
                 <p className="text-emerald-700 font-bold text-sm">{product.name}</p>
-                <p className="text-2xl font-black text-emerald-600">
+                <p className="text-2xl land:text-5xl font-black text-emerald-600">
                   {product.price}<span className="text-sm text-gray-400">えん</span>
                 </p>
               </div>
             </div>
 
             {/* Coins area */}
-            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
+            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0 land:row-span-2 land:flex land:flex-col land:justify-center">
               {is50Mode && (
                 <p className="text-center text-[0.625rem] text-yellow-600 font-bold mb-1">
                   50えんだまを かならず つかおう！
                 </p>
               )}
-              <div className="flex justify-center items-end gap-3">
+              <div className="flex justify-center items-end gap-3 land:gap-4">
                 {coinDefs.map((coin) => (
                   <div key={coin.key} className="flex flex-col items-center gap-0.5">
                     <Coin
@@ -344,7 +344,7 @@ export default function ShoppingPage() {
             </div>
 
             {/* Total & pay */}
-            <div className="surface rounded-2xl p-2 mb-1 flex-shrink-0">
+            <div className="surface rounded-2xl p-2 land:p-4 mb-1 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-[0.625rem]">いま いれたおかね</p>
@@ -370,7 +370,7 @@ export default function ShoppingPage() {
             {phase === "correct" && (
               <div className="fixed inset-0 z-40" onClick={next} />
             )}
-            <div className="text-center flex-1 flex flex-col items-center justify-center gap-1 min-h-0 relative z-50">
+            <div className="text-center flex-1 flex flex-col items-center justify-center gap-1 min-h-0 relative z-50 land:[zoom:1.3]">
               {phase === "correct" && (
                 <>
                   <p className="text-green-600 font-bold text-xl md:text-3xl animate-bounce">

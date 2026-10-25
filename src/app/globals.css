@@ -32,6 +32,13 @@ html {
   }
 }
 
+/* iPad landscape: height is the limit, layouts switch to two columns (land:) */
+@media (orientation: landscape) and (min-width: 900px) and (min-height: 560px) {
+  html {
+    font-size: clamp(16px, 2.6svh, 24px);
+  }
+}
+
 body {
   background: var(--cream);
   color: var(--ink);

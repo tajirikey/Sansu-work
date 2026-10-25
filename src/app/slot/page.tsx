@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { rem, useUiScale } from "@/lib/ui";
+import { useIsLandscape, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import { playPop, playSuccess, playError } from "@/lib/sounds";
 import RewardModal from "@/components/RewardModal";
@@ -97,7 +97,8 @@ function SlotRoller({
   wrong, disabled,
 }: SlotRollerProps) {
   const ui = useUiScale();
-  const CELL_H = BASE_CELL_H * ui;
+  const land = useIsLandscape();
+  const CELL_H = (land ? 76 : BASE_CELL_H) * ui;
   const [dragOffset, setDragOffset] = useState(0);
   const [isSnapping, setIsSnapping] = useState(false);
   const dragging = useRef(false);
@@ -376,10 +377,12 @@ export default function SlotPage() {
 
   return (
     <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-orange-50 to-amber-50 p-3 flex flex-col">
-      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col flex-1">
         {/* header */}
         <GameHeader title="かずをつくろう" accent="#F2711C" right={<span className="chip text-orange-500">{streak}🔥</span>} />
 
+        <div className="flex-1 flex flex-col land:flex-row land:gap-6 min-h-0">
+        <div className="flex flex-col land:w-[46%] land:justify-center">
         {/* question */}
         <div className="surface rounded-xl p-3 mb-3">
           <QuestionDisplay question={question} />
@@ -465,6 +468,8 @@ export default function SlotPage() {
           )}
         </div>
 
+        </div>
+
         {/* visual */}
         <div className="surface rounded-xl p-2.5 flex-1 overflow-y-auto">
           <p className="text-gray-400 text-[0.625rem] font-bold mb-1.5">いまの かずのかたち</p>
@@ -507,6 +512,8 @@ export default function SlotPage() {
               ロールをスライドして かずをつくろう！
             </p>
           )}
+        </div>
+
         </div>
 
         {/* bottom: bonus spin + stats */}

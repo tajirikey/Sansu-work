@@ -8,6 +8,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      borderWidth: {
+        3: "3px",
+      },
+      screens: {
+        // iPad held sideways
+        land: { raw: "(orientation: landscape) and (min-width: 900px) and (min-height: 560px)" },
+      },
       fontFamily: {
         pixel: ['"Press Start 2P"', "monospace"],
       },

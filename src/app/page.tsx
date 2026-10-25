@@ -185,9 +185,10 @@ export default function Home() {
       <div className="pointer-events-none absolute -top-10 -right-24 w-80 h-80 rounded-full bg-amber-200/50 blur-3xl -z-10" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-sky-200/40 blur-3xl -z-10" />
 
-      <div className="max-w-xl md:max-w-lg mx-auto px-4 pt-7 pb-10">
+      <div className="max-w-xl md:max-w-lg land:max-w-6xl mx-auto px-4 pt-7 land:pt-4 pb-10 land:pb-4">
+        <div className="land:flex land:items-center land:gap-6 land:mb-5">
         {/* Title */}
-        <header className="flex items-center gap-3 mb-5">
+        <header className="flex items-center gap-3 mb-5 land:mb-0 land:flex-shrink-0">
           <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center rotate-[-6deg]" style={{ boxShadow: "var(--shadow-soft)" }}>
             <svg viewBox="0 0 24 24" className="w-7 h-7">
               <path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" fill="#FFD43B" stroke="#F08C00" strokeWidth="1.5" strokeLinejoin="round" />
@@ -200,7 +201,7 @@ export default function Home() {
         </header>
 
         {/* Collection */}
-        <Link href="/collection" className="block mb-6">
+        <Link href="/collection" className="block mb-6 land:mb-0 land:flex-1">
           <div className="surface pressable p-3.5 flex items-center gap-3">
             <div className="flex -space-x-3 flex-shrink-0">
               {latest.length > 0 ? (
@@ -233,6 +234,8 @@ export default function Home() {
           </div>
         </Link>
 
+        </div>
+
         {/* Games */}
         <p className="text-ink-faint text-xs font-bold tracking-[0.3em] mb-2.5 pl-1">あそぶ</p>
         <div className="grid grid-cols-3 gap-3">
@@ -240,14 +243,16 @@ export default function Home() {
             const Icon = room.icon;
             return (
               <Link key={room.href} href={room.href} className="block">
-                <div className="surface pressable rounded-3xl p-2 pb-2.5 h-full">
-                  <div className="aspect-square md:aspect-[6/5] rounded-[1.1rem] p-2.5 flex items-center justify-center" style={{ background: room.tint }}>
+                <div className="surface pressable rounded-3xl p-2 pb-2.5 land:p-3 h-full land:flex land:items-center land:gap-4">
+                  <div className="aspect-square md:aspect-[6/5] land:aspect-square land:w-28 land:flex-shrink-0 rounded-[1.1rem] p-2.5 flex items-center justify-center" style={{ background: room.tint }}>
                     <Icon />
                   </div>
-                  <p className="mt-2 text-center font-black text-[0.8125rem] leading-tight tracking-wide" style={{ color: room.accent }}>
-                    {room.title}
-                  </p>
-                  <p className="text-center text-ink-soft text-[0.625rem] leading-tight mt-0.5">{room.subtitle}</p>
+                  <div className="land:min-w-0">
+                    <p className="mt-2 land:mt-0 text-center land:text-left font-black text-[0.8125rem] land:text-lg leading-tight tracking-wide" style={{ color: room.accent }}>
+                      {room.title}
+                    </p>
+                    <p className="text-center land:text-left text-ink-soft text-[0.625rem] land:text-sm leading-tight mt-0.5 land:mt-1">{room.subtitle}</p>
+                  </div>
                 </div>
               </Link>
             );

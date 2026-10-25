@@ -53,7 +53,7 @@ function PlaceColumn({
   const s = styles[color];
 
   return (
-    <div className={`${s.bg} rounded-xl border ${s.border} p-3 flex-1 flex flex-col items-center min-h-[18.75rem]`}>
+    <div className={`${s.bg} rounded-xl border ${s.border} p-3 flex-1 flex flex-col items-center min-h-[18.75rem] land:min-h-[24rem]`}>
       <p className={`${s.text} text-xs font-bold mb-1`}>{label}</p>
       <p className="text-gray-800 text-3xl font-bold mb-3">{count}</p>
 
@@ -160,14 +160,16 @@ export default function PlaceValuePage() {
   };
 
   return (
-    <div className="relative dream-dots min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 p-4 pb-32">
-      <div className="max-w-lg mx-auto">
+    <div className="relative dream-dots min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 p-4 pb-32 land:pb-6">
+      <div className="max-w-lg land:max-w-6xl mx-auto">
         <GameHeader title="かずくんハウス" accent="#3B7BF0" />
 
+        <div className="flex flex-col land:flex-row land:gap-6 land:items-stretch">
+        <div className="flex flex-col land:w-[36%] land:justify-center">
         {/* target */}
         <div className="text-center mb-3">
           <p className="text-gray-500 text-sm mb-1">このかずを つくろう</p>
-          <div className="text-5xl font-bold text-blue-700">{target}</div>
+          <div className="text-5xl land:text-7xl font-bold text-blue-700">{target}</div>
           <p className="text-gray-400 text-xs mt-1">{numberToReading(target)}</p>
         </div>
 
@@ -193,8 +195,10 @@ export default function PlaceValuePage() {
           <p className="text-gray-800 text-sm">{message}</p>
         </div>
 
+        </div>
+
         {/* place value columns */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 land:flex-1">
           <PlaceColumn
             label="百のくらい"
             count={place.hundreds}
@@ -224,6 +228,8 @@ export default function PlaceValuePage() {
               />
             )}
           />
+        </div>
+
         </div>
 
         {/* Tap-to-continue overlay */}

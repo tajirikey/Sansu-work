@@ -715,10 +715,12 @@ export default function NumberLinePage() {
 
   return (
     <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-purple-50 to-amber-50 p-3 flex flex-col">
-      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col flex-1">
         {/* Header */}
         <GameHeader title="かぞえよう" accent="#8B5CF6" />
 
+        <div className="flex-1 flex flex-col land:flex-row land:gap-6 min-h-0">
+        <div className="flex flex-col land:w-[40%] land:justify-center">
         {/* ─── Big stats bar ─── */}
         <div className="surface rounded-2xl p-3 mb-2">
           <div className="flex items-center justify-between mb-2">
@@ -766,8 +768,8 @@ export default function NumberLinePage() {
 
         {/* Question */}
         <div className="text-center mb-2">
-          <span className="text-purple-700 text-3xl font-bold">{problem.current}</span>
-          <span className="text-gray-500 mx-2 text-base">の {stepLabel(problem.step)} は？</span>
+          <span className="text-purple-700 text-3xl land:text-5xl font-bold">{problem.current}</span>
+          <span className="text-gray-500 mx-2 text-base land:text-xl">の {stepLabel(problem.step)} は？</span>
         </div>
 
         {/* Composed answer display */}
@@ -785,6 +787,8 @@ export default function NumberLinePage() {
               {composedAnswer > 0 || cleared || showCorrectAnswer ? composedAnswer : "？？？"}
             </span>
           </div>
+        </div>
+
         </div>
 
         {/* ═══ Place Value Columns ═══ */}
@@ -870,6 +874,8 @@ export default function NumberLinePage() {
               </div>
             </div>
           )}
+        </div>
+
         </div>
 
         {/* Tap-to-continue overlay */}

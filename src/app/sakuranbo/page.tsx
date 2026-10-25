@@ -656,12 +656,13 @@ export default function SakuranboPage() {
 
   return (
     <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-pink-50 to-amber-50 p-3 flex flex-col">
-      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col flex-1">
         {/* Header */}
         <GameHeader title="さくらんぼけいさん" accent="#E64593" />
 
+        <div className="land:flex land:items-center land:gap-3 land:mb-2">
         {/* Stats bar */}
-        <div className="surface rounded-2xl p-3 mb-2">
+        <div className="surface rounded-2xl p-3 mb-2 land:mb-0 land:flex-1">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-2xl">
@@ -705,7 +706,7 @@ export default function SakuranboPage() {
         </div>
 
         {/* Mode toggle */}
-        <div className="flex justify-center gap-1 mb-3">
+        <div className="flex justify-center gap-1 mb-3 land:mb-0">
           {MODE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -721,8 +722,11 @@ export default function SakuranboPage() {
           ))}
         </div>
 
+        </div>
+
         {/* ═══ Problem + Cherry Branch ═══ */}
-        <div className="surface rounded-2xl p-4 flex-1 flex flex-col gap-3">
+        <div className="surface rounded-2xl p-4 land:p-4 flex-1 flex flex-col land:flex-row land:items-center gap-3 land:gap-8">
+          <div className="flex flex-col gap-3 land:flex-1 land:items-center">
           {/* Problem row: tappable operands */}
           <div className="flex items-center justify-center gap-2">
             {/* Number A */}
@@ -832,8 +836,11 @@ export default function SakuranboPage() {
             />
           )}
 
+          </div>
+
+          <div className="flex flex-col gap-3 land:flex-1">
           {/* Dot visualization */}
-          <div className="border-t border-pink-100 pt-2">
+          <div className="border-t land:border-t-0 border-pink-100 pt-2 land:[zoom:1.4]">
             <DotVisualization
               problem={problem}
               phase={phase === "correct" ? "correct" : phase === "wrong" ? "wrong" : "input"}
@@ -860,6 +867,7 @@ export default function SakuranboPage() {
               </p>
             </div>
           )}
+          </div>
         </div>
 
         {/* Tap-to-continue overlay */}
@@ -868,7 +876,7 @@ export default function SakuranboPage() {
         )}
 
         {/* Action button */}
-        <div className="text-center py-3 relative z-50">
+        <div className="text-center py-3 land:py-1.5 relative z-50">
           {phase === "correct" ? (
             <p className="text-gray-400 text-sm animate-pulse py-3">タップして つぎへ</p>
           ) : phase === "select" ? (

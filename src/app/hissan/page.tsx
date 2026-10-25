@@ -396,7 +396,7 @@ export default function HissanPage() {
   if (!expected || !problem) {
     return (
       <div className="fixed inset-0 dream-dots bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
-        <div className="max-w-lg mx-auto w-full flex flex-col h-full">
+        <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col h-full">
           <GameHeader title="ひっさんビルダー" accent="#0B8FD6" />
           <LevelSelect
             emoji="📝"
@@ -423,7 +423,7 @@ export default function HissanPage() {
 
   return (
     <div className="fixed inset-0 dream-dots bg-gradient-to-b from-sky-50 to-blue-50 p-3 flex flex-col touch-manipulation" style={{ overflow: "hidden" }}>
-      <div className="max-w-lg mx-auto w-full flex flex-col h-full">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between gap-2 flex-shrink-0">
           <BackButton />
@@ -445,10 +445,11 @@ export default function HissanPage() {
         </div>
 
         {/* All content packed together in center */}
-        <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-2">
+        <div className="flex-1 flex flex-col land:flex-row items-center justify-center min-h-0 gap-2 land:gap-12">
+          <div className="flex flex-col items-center gap-2 land:gap-4">
           {/* Horizontal equation */}
           <div className="surface px-7 py-2.5 text-center flex-shrink-0">
-            <p className="text-3xl font-black text-ink tracking-wider tabular-nums">
+            <p className="text-3xl land:text-4xl font-black text-ink tracking-wider tabular-nums">
               {problem.a} {problem.op} {problem.b} = <span className="text-sky-300">？</span>
             </p>
           </div>
@@ -464,7 +465,7 @@ export default function HissanPage() {
                 const showCarry = carryVal > 0 && !isAnimating;
 
                 return (
-                  <div key={ci} className="w-16 h-8 flex items-center justify-center relative">
+                  <div key={ci} className="w-16 h-8 land:w-24 land:h-12 flex items-center justify-center relative">
                     {showCarry && (
                       <span className="text-red-500 text-base font-bold animate-bounce">{carryVal}</span>
                     )}
@@ -490,14 +491,14 @@ export default function HissanPage() {
                     const isAnswerFilled = phaseAnswer && ri === 2 && userGrid[2]?.[ci] !== null;
 
                     if (state.expected === null) {
-                      return <div key={ci} className="w-16 h-16" />;
+                      return <div key={ci} className="w-16 h-16 land:w-24 land:h-24" />;
                     }
 
                     return (
                       <button
                         key={ci}
                         onClick={() => phaseBuild ? handleCellTap(ri, ci) : undefined}
-                        className={`w-16 h-16 border-2 flex items-center justify-center text-3xl font-black transition-all select-none touch-manipulation
+                        className={`w-16 h-16 land:w-24 land:h-24 border-2 flex items-center justify-center text-3xl land:text-5xl font-black transition-all select-none touch-manipulation
                           ${isActive
                             ? "border-sky-400 bg-sky-100 scale-105 shadow-md"
                             : isAnswerActive
@@ -526,7 +527,7 @@ export default function HissanPage() {
                 {ri === 1 && (
                   <div className="flex">
                     {row.map((_, ci) => (
-                      <div key={ci} className="w-16 h-1 bg-gray-700" />
+                      <div key={ci} className="w-16 land:w-24 h-1 bg-gray-700" />
                     ))}
                   </div>
                 )}
@@ -534,6 +535,9 @@ export default function HissanPage() {
             ))}
           </div>
 
+          </div>
+
+          <div className="flex flex-col items-center gap-2 land:gap-3 land:min-w-[24rem]">
           {/* Answer phase: column sum prompt */}
           {phaseAnswer && currentColInfo && ansSubPhase !== "carry-anim" && ansSubPhase !== "done" && (
             <div className={`bg-white/95 border-2 rounded-2xl px-6 py-3 shadow-md text-center transition-all ${colSumWrong ? "border-red-400 animate-shake" : "border-amber-300"}`}>
@@ -600,7 +604,7 @@ export default function HissanPage() {
               <p className="text-center text-gray-400 text-lg animate-pulse relative z-50">タップして つぎへ</p>
             </>
           ) : (phaseBuild || phaseAnswer) ? (
-            <div className="flex-shrink-0 w-full max-w-sm mx-auto">
+            <div className="flex-shrink-0 w-full max-w-sm land:max-w-lg mx-auto">
               <div className="grid grid-cols-5 gap-2">
                 {(phaseBuild ? ["1","2","3","4","5","6","7","8","9","0","+","−"] : ["1","2","3","4","5","6","7","8","9","0"]).map((n) => (
                   <button
@@ -614,7 +618,7 @@ export default function HissanPage() {
                       }
                     }}
                     disabled={phaseBuild ? !activeCell : ansSubPhase === "carry-anim"}
-                    className={`h-14 rounded-2xl font-black text-2xl transition-all active:scale-90 select-none touch-manipulation disabled:opacity-30
+                    className={`h-14 land:h-20 rounded-2xl font-black text-2xl land:text-4xl transition-all active:scale-90 select-none touch-manipulation disabled:opacity-30
                       ${n === "+" || n === "−"
                         ? "bg-orange-100 border-2 border-orange-300 text-orange-600"
                         : "surface pressable !rounded-2xl text-sky-700"
@@ -627,6 +631,7 @@ export default function HissanPage() {
               </div>
             </div>
           ) : null}
+          </div>
         </div>
       </div>
 

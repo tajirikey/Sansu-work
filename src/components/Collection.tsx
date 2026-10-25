@@ -333,7 +333,7 @@ export default function Collection() {
 
   return (
     <div className="relative min-h-[100dvh] dream-dots pb-16">
-      <div className="max-w-xl mx-auto px-4 pt-4">
+      <div className="max-w-xl land:max-w-6xl mx-auto px-4 pt-4">
         <GameHeader title="アイテムずかん" accent="#F59F00" />
 
         {/* Progress */}
@@ -369,7 +369,7 @@ export default function Collection() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 land:grid-cols-10 gap-2 land:gap-3">
           {items.map((item) => {
             const isCollected = collected.includes(item.id);
             const r = RARITY[item.rarity];

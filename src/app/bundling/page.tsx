@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { rem, useUiScale } from "@/lib/ui";
+import { useIsLandscape, useUiScale } from "@/lib/ui";
 import GameHeader from "@/components/GameHeader";
 import TenBundle from "@/components/TenBundle";
 import HundredPlate from "@/components/HundredPlate";
@@ -53,8 +53,9 @@ function numberToReading(n: number): string {
 /* ─── page ─── */
 export default function BundlingPage() {
   const ui = useUiScale();
-  const CELL = BASE_CELL * ui;
-  const DOT_SIZE = BASE_DOT * ui;
+  const land = useIsLandscape();
+  const CELL = (land ? 41 : BASE_CELL) * ui;
+  const DOT_SIZE = (land ? 30 : BASE_DOT) * ui;
   const DOT_R = DOT_SIZE / 2 + 6 * ui;
   const [target, setTarget] = useState(() => randomTarget());
   const [dots, setDots] = useState<DotState[]>(() => makeDots(randomTarget()));
@@ -300,15 +301,17 @@ export default function BundlingPage() {
 
   return (
     <div className="relative dream-dots min-h-[100dvh] bg-gradient-to-b from-green-50 to-amber-50 p-3 flex flex-col">
-      <div className="max-w-lg mx-auto w-full flex flex-col flex-1">
+      <div className="max-w-lg land:max-w-6xl mx-auto w-full flex flex-col flex-1">
         {/* header */}
         <GameHeader title="まとめてみよう" accent="#22A55B" />
 
+        <div className="flex-1 flex flex-col land:flex-row land:gap-6 min-h-0">
+        <div className="flex flex-col land:w-[38%]">
         {/* target + counters row */}
         <div className="flex items-center justify-between mb-2">
           <div className="text-center flex-1">
             <p className="text-gray-500 text-xs">つくるかず</p>
-            <div className="text-4xl font-bold text-green-700 leading-tight">{target}</div>
+            <div className="text-4xl land:text-6xl font-bold text-green-700 leading-tight">{target}</div>
             <p className="text-gray-400 text-[0.625rem]">{numberToReading(target)}</p>
           </div>
           <div className="flex gap-2 text-xs">
@@ -363,6 +366,8 @@ export default function BundlingPage() {
           </div>
         </div>
 
+        </div>
+
         {/* 一 dots grid */}
         <div className="bg-white/80 rounded-lg p-2 mb-2 border border-green-200 shadow-sm flex-1">
           <p className="text-green-600 text-[0.625rem] mb-1 font-bold">
@@ -397,6 +402,8 @@ export default function BundlingPage() {
               </div>
             ))}
           </div>
+        </div>
+
         </div>
 
         {/* Tap-to-continue overlay */}
